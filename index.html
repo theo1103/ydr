@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Manajemen Gift Pro</title>
+    <title>Sistem Manajemen Gift Pro - Multi User Chart</title>
     <!-- Library OCR Tesseract.js & Chart.js -->
     <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,7 +25,7 @@
             padding: 20px; 
         }
         .container { 
-            max-width: 750px; 
+            max-width: 850px; 
             margin: 0 auto; 
             background: var(--card-bg); 
             padding: 30px; 
@@ -73,7 +73,7 @@
             margin-bottom: 8px;
             font-weight: 600;
         }
-        input[type="text"], input[type="number"], input[type="file"] {
+        input[type="text"], input[type="number"], input[type="file"], input[type="date"] {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid #d1d5db;
@@ -115,6 +115,7 @@
             padding: 12px; 
             border-bottom: 1px solid #e5e7eb; 
             text-align: left; 
+            font-size: 14px;
         }
         th {
             background-color: #f9fafb;
@@ -129,6 +130,16 @@
             background-color: #e0e7ff !important;
             font-weight: bold;
         }
+        .chart-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -136,8 +147,8 @@
         <h2>Manajemen Gift Pro</h2>
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('input')">Input & Scan</button>
-            <button class="tab-btn" onclick="switchTab('report')">Report List</button>
-            <button class="tab-btn" onclick="switchTab('grafik')">Grafik Mingguan</button>
+            <button class="tab-btn" onclick="switchTab('report')">Report List & Waktu</button>
+            <button class="tab-btn" onclick="switchTab('grafik')">Grafik Per User</button>
         </div>
         
         <!-- Tab 1: Input & Scan Screenshot -->
@@ -161,7 +172,7 @@
             </form>
         </div>
 
-        <!-- Tab 2: Report List -->
+        <!-- Tab 2: Report List dengan Waktu Input -->
         <div id="reportTab" class="tab-content">
             <div style="margin-bottom: 15px;">
                 <input type="text" id="searchNama" placeholder="Cari nama subject..." onkeyup="renderTable()">
@@ -173,28 +184,40 @@
                     <tr>
                         <th>No</th>
                         <th>Nama Subject</th>
+                        <th>Waktu Input Terakhir</th>
                         <th>Total Gift</th>
                     </tr>
                 </thead>
                 <tbody id="giftTableBody">
-                    <tr><td colspan="3" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>
+                    <tr><td colspan="4" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Tab 3: Grafik Mingguan -->
+        <!-- Tab 3: Grafik Mingguan Per User (Bisa Setting Tanggal) -->
         <div id="grafikTab" class="tab-content">
-            <canvas id="giftChart"></canvas>
+            <div class="chart-controls">
+                <div style="flex: 1;">
+                    <label for="startDate" style="font-size: 13px; margin-bottom: 4px;">Mulai Tanggal:</label>
+                    <input type="date" id="startDate" onchange="updateCharts()">
+                </div>
+                <div style="flex: 1;">
+                    <label for="endDate" style="font-size: 13px; margin-bottom: 4px;">Sampai Tanggal:</label>
+                    <input type="date" id="endDate" onchange="updateCharts()">
+                </div>
+            </div>
+            <div style="position: relative; height: 350px;">
+                <canvas id="giftChart"></canvas>
+            </div>
         </div>
     </div>
 
     <script>
-        // Mengambil data dari localStorage atau inisialisasi objek kosong
-        let giftData = JSON.parse(localStorage.getItem('giftData')) || {};
+        // Struktur data: giftData[dateString] = { namaUser: { total: angka, lastTime: "YYYY-MM-DD HH:mm:ss" } }
+        let giftData = JSON.parse(localStorage.getItem('giftDataPro')) || {};
 
         function saveData() {
-            localStorage.setItem('giftData', JSON.stringify(giftData));
-            updateCharts();
+            localStorage.setItem('giftDataPro', JSON.stringify(giftData));
         }
 
         function switchTab(tab) {
@@ -209,6 +232,7 @@
             }
             if(tab === 'grafik') {
                 document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+                initDateFilter();
                 updateCharts();
             }
         }
@@ -266,50 +290,66 @@
             }
         }
 
-        // Handle Submit Form & Akumulasi Tanggal (untuk grafik mingguan)
+        // Handle Submit Form & Akumulasi Tanggal + Jam Otomatis
         document.getElementById('giftForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const nama = document.getElementById('nama').value.trim();
             const jumlah = parseInt(document.getElementById('jumlah').value);
             
-            const date = new Date().toISOString().split('T')[0];
-            if(!giftData[date]) giftData[date] = {};
-            giftData[date][nama] = (giftData[date][nama] || 0) + jumlah;
+            const now = new Date();
+            const dateString = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            const timeString = now.toTimeString().split(' ')[0]; // Format: HH:mm:ss
+            const fullDateTime = `${dateString} ${timeString}`;
+
+            if(!giftData[dateString]) giftData[dateString] = {};
+            if(!giftData[dateString][nama]) {
+                giftData[dateString][nama] = { total: 0, lastTime: fullDateTime };
+            }
+            
+            giftData[dateString][nama].total += jumlah;
+            giftData[dateString][nama].lastTime = fullDateTime; // Update waktu input terakhir
             
             saveData();
             document.getElementById('giftForm').reset();
-            alert('Data Berhasil Disimpan & Terakumulasi!');
+            alert('Data Berhasil Disimpan & Waktu Tercatat!');
         });
 
-        // Render Tabel Report & Grand Total
+        // Render Tabel Report dengan Tanggal & Jam Input
         function renderTable() {
             const tableBody = document.getElementById('giftTableBody');
             tableBody.innerHTML = '';
             const keyword = document.getElementById('searchNama').value.toLowerCase();
 
-            // Akumulasi global semua tanggal untuk report list
+            // Gabungkan data dari semua tanggal untuk rekap global
             const aggregated = {};
             let grandTotal = 0;
 
             Object.keys(giftData).forEach(date => {
                 const users = giftData[date];
                 for(let name in users) {
-                    aggregated[name] = (aggregated[name] || 0) + users[name];
+                    if(!aggregated[name]) {
+                        aggregated[name] = { total: 0, lastTime: users[name].lastTime };
+                    }
+                    aggregated[name].total += users[name].total;
+                    // Ambil waktu yang paling baru
+                    if(users[name].lastTime > aggregated[name].lastTime) {
+                        aggregated[name].lastTime = users[name].lastTime;
+                    }
                 }
             });
 
             const allNames = Object.keys(aggregated);
-            allNames.forEach(name => grandTotal += aggregated[name]);
+            allNames.forEach(name => grandTotal += aggregated[name].total);
 
             const filteredNames = allNames.filter(name => name.toLowerCase().includes(keyword));
 
             if (allNames.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="4" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>`;
                 return;
             }
 
             if (filteredNames.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="empty-row">Tidak ada data subject yang ditemukan.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="4" class="empty-row">Tidak ada data subject yang ditemukan.</td></tr>`;
                 return;
             }
 
@@ -319,7 +359,8 @@
                 row.innerHTML = `
                     <td>${no++}</td>
                     <td>${escapeHtml(name)}</td>
-                    <td><strong style="color:var(--primary-color);">${aggregated[name].toLocaleString()}</strong></td>
+                    <td><small style="color: #6b7280;">📅 ${aggregated[name].lastTime}</small></td>
+                    <td><strong style="color:var(--primary-color);">${aggregated[name].total.toLocaleString()}</strong></td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -327,51 +368,92 @@
             const totalRow = document.createElement('tr');
             totalRow.className = 'grand-total-row';
             totalRow.innerHTML = `
-                <td colspan="2" style="text-align: right;">TOTAL KESELURUHAN:</td>
+                <td colspan="3" style="text-align: right;">TOTAL KESELURUHAN:</td>
                 <td>${grandTotal.toLocaleString()}</td>
             `;
             tableBody.appendChild(totalRow);
         }
 
-        // Render Line Chart untuk 1 Minggu Terakhir
+        // Inisialisasi default tanggal filter grafik (7 hari terakhir)
+        function initDateFilter() {
+            const endDateInput = document.getElementById('endDate');
+            const startDateInput = document.getElementById('startDate');
+            
+            if(!endDateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                endDateInput.value = today;
+                
+                const pastDate = new Date();
+                pastDate.setDate(pastDate.getDate() - 6);
+                startDateInput.value = pastDate.toISOString().split('T')[0];
+            }
+        }
+
+        // Render Line Chart Berdasarkan Per User dengan Rentang Tanggal Dinamis
         let myChart;
         function updateCharts() {
             const ctx = document.getElementById('giftChart').getContext('2d');
             
-            // Ambil 7 hari terakhir secara dinamis
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+            
+            if(!startStr || !endStr) return;
+
+            // Buat rentang tanggal (labels) berdasarkan input user
             const labels = [];
-            const totals = [];
+            let curr = new Date(startStr);
+            const end = new Date(endStr);
             
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateString = d.toISOString().split('T')[0];
-                labels.push(dateString);
-                
-                let dailyTotal = 0;
-                if (giftData[dateString]) {
-                    dailyTotal = Object.values(giftData[dateString]).reduce((a, b) => a + b, 0);
-                }
-                totals.push(dailyTotal);
+            while(curr <= end) {
+                labels.push(curr.toISOString().split('T')[0]);
+                curr.setDate(curr.getDate() + 1);
             }
-            
+
+            // Kumpulkan seluruh unique user yang ada di rentang tanggal tersebut
+            const uniqueUsers = new Set();
+            labels.forEach(date => {
+                if(giftData[date]) {
+                    Object.keys(giftData[date]).forEach(user => uniqueUsers.add(user));
+                }
+            });
+
+            // Warna otomatis untuk garis masing-masing user
+            const colorPalette = ['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
+            let colorIdx = 0;
+
+            const datasets = [];
+            uniqueUsers.forEach(user => {
+                const userData = labels.map(date => {
+                    if(giftData[date] && giftData[date][user]) {
+                        return giftData[date][user].total;
+                    }
+                    return 0; // 0 jika di tanggal tersebut user tidak ada transaksi
+                });
+
+                const color = colorPalette[colorIdx % colorPalette.length];
+                colorIdx++;
+
+                datasets.push({
+                    label: user,
+                    data: userData,
+                    borderColor: color,
+                    backgroundColor: color,
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.2
+                });
+            });
+
             if(myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'line',
                 data: { 
                     labels: labels, 
-                    datasets: [{ 
-                        label: 'Total Gift Harian (7 Hari Terakhir)', 
-                        data: totals, 
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.3
-                    }] 
+                    datasets: datasets 
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: { beginAtZero: true }
                     }
@@ -381,7 +463,7 @@
 
         function resetData() {
             if (confirm("Apakah Anda yakin ingin mereset seluruh data?")) {
-                localStorage.removeItem('giftData');
+                localStorage.removeItem('giftDataPro');
                 giftData = {};
                 renderTable();
                 alert("Data berhasil direset.");
