@@ -11,7 +11,6 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* ===== CSS LENGKAP (sama seperti sebelumnya, tanpa perubahan) ===== */
         :root {
             --bg-primary: #0a0a1a;
             --bg-secondary: #111128;
@@ -71,8 +70,8 @@
         .logout-icon { font-size: 80px; margin-bottom: 20px; animation: logout-bounce 1s ease-in-out infinite; }
         @keyframes logout-bounce { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-20px) rotate(10deg); } }
         .logout-text { font-size: 28px; font-weight: 700; color: white; letter-spacing: 4px; animation: text-pulse 1s ease-in-out infinite; }
-        .main-app { display: flex; min-height: 100vh; position: relative; z-index: 1; opacity: 0; transition: opacity 0.5s ease; }
-        .main-app.visible { opacity: 1; }
+        .main-app { display: flex; min-height: 100vh; position: relative; z-index: 1; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
+        .main-app.visible { opacity: 1; pointer-events: all; }
         .sidebar { width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border-glass); padding: 20px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; top: 0; left: 0; z-index: 100; transition: all 0.4s ease; }
         .sidebar-logo { text-align: center; padding: 0 20px 20px; border-bottom: 1px solid var(--border-glass); margin-bottom: 20px; }
         .sidebar-logo span { font-size: 28px; }
@@ -187,10 +186,6 @@
         .toast.info { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
         .toast.warning { background: linear-gradient(135deg, #fdcb6e, #f39c12); color: #000; }
         @media (max-width: 768px) { .sidebar { width: 70px; padding: 15px 0; } .sidebar-logo h2, .sidebar-logo p, .nav-label, .nav-badge, .logout-btn span { display: none; } .nav-item { justify-content: center; padding: 12px; } .nav-item .nav-icon { font-size: 22px; width: auto; } .sidebar-footer { padding: 10px; } .logout-btn { justify-content: center; padding: 10px; } .main-content { margin-left: 70px; padding: 20px; } .profile-container { grid-template-columns: 1fr; } .entry-grid { grid-template-columns: 1fr; } .login-card { padding: 30px 20px; } .podium-block { width: 70px; } .podium-spot.first .podium-block { width: 90px; } .podium-spot.second .podium-block { width: 80px; } .chart-container { height: 300px; } }
-        .fade-in { animation: fadeIn 0.6s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .hover-grow { transition: var(--transition); }
-        .hover-grow:hover { transform: scale(1.02); }
         .badge-chip { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
         .badge-theo { background: rgba(108, 92, 231, 0.2); color: #a29bfe; }
         .badge-kevin { background: rgba(0, 184, 148, 0.2); color: #55efc4; }
@@ -204,7 +199,7 @@
     <!-- PARTICLES BACKGROUND -->
     <div class="particles-container" id="particlesContainer"></div>
 
-    <!-- LOGIN PAGE (hanya tombol Masuk) -->
+    <!-- LOGIN PAGE -->
     <div class="login-page" id="loginPage">
         <div class="login-card">
             <div class="login-logo">🎁</div>
@@ -501,7 +496,7 @@
 
     <script>
         // ===== SUPABASE CONFIGURATION =====
-        const SUPABASE_URL = 'https://dvfmlvueexnvgcnoiujr.supabase.co'; // Ganti dengan URL proyek Supabase Anda
+        const SUPABASE_URL = 'https://dvfmlvueexnvgcnoiujr.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_KoCuMn0yU7Yp72mnNB0_jw_L3wupUq-';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -514,7 +509,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             initializeDateInputs();
-            // Tidak perlu load data sampai tombol Masuk diklik
         });
 
         function createParticles() {
@@ -533,14 +527,21 @@
 
         function initializeDateInputs() {
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('entryDate').value = today;
-            document.getElementById('reportDate').value = today;
+            const dateInputEl = document.getElementById('entryDate');
+            const reportDateEl = document.getElementById('reportDate');
+            if (dateInputEl) dateInputEl.value = today;
+            if (reportDateEl) reportDateEl.value = today;
 
             const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            document.getElementById('chartStartDate').value = weekAgo;
-            document.getElementById('chartEndDate').value = today;
-            document.getElementById('achStartDate').value = weekAgo;
-            document.getElementById('achEndDate').value = today;
+            const chartStart = document.getElementById('chartStartDate');
+            const chartEnd = document.getElementById('chartEndDate');
+            const achStart = document.getElementById('achStartDate');
+            const achEnd = document.getElementById('achEndDate');
+
+            if (chartStart) chartStart.value = weekAgo;
+            if (chartEnd) chartEnd.value = today;
+            if (achStart) achStart.value = weekAgo;
+            if (achEnd) achEnd.value = today;
         }
 
         // ===== TOMBOL MASUK =====
@@ -558,14 +559,14 @@
                 let msgIndex = 0;
                 const msgInterval = setInterval(() => {
                     msgIndex = (msgIndex + 1) % loadingMessages.length;
-                    loadingText.textContent = loadingMessages[msgIndex];
+                    if (loadingText) loadingText.textContent = loadingMessages[msgIndex];
                 }, 600);
 
                 let progress = 0;
                 const progressInterval = setInterval(() => {
                     progress += Math.random() * 15 + 5;
                     if (progress > 100) progress = 100;
-                    progressBar.style.width = progress + '%';
+                    if (progressBar) progressBar.style.width = progress + '%';
                     if (progress >= 100) {
                         clearInterval(progressInterval);
                         clearInterval(msgInterval);
@@ -581,7 +582,7 @@
             }, 400);
         });
 
-        // ===== LOGOUT (kembali ke halaman awal) =====
+        // ===== LOGOUT =====
         document.getElementById('logoutBtn').addEventListener('click', function() {
             const logoutOverlay = document.getElementById('logoutOverlay');
             logoutOverlay.classList.add('active');
@@ -602,31 +603,40 @@
                 document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
                 this.classList.add('active');
                 document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
-                document.getElementById('page-' + page).classList.add('active');
+                
+                const targetSection = document.getElementById('page-' + page);
+                if (targetSection) targetSection.classList.add('active');
+
                 if (page === 'report') {
-                    setTimeout(() => renderUser3DChart(), 100);
-                    setTimeout(() => renderReport(), 100);
+                    setTimeout(() => {
+                        renderUser3DChart();
+                        renderReport();
+                    }, 150);
                 } else if (page === 'achievement') {
-                    setTimeout(() => renderAchievementChart(), 100);
+                    setTimeout(() => renderAchievementChart(), 150);
                 } else if (page === 'rank') {
-                    setTimeout(() => renderRank(), 100);
+                    setTimeout(() => renderRank(), 150);
                 } else if (page === 'entry') {
-                    setTimeout(() => updateRecentEntries(), 100);
-                    updateUserDatalist();
+                    setTimeout(() => {
+                        updateRecentEntries();
+                        updateUserDatalist();
+                    }, 150);
                 }
             });
         });
 
         async function renderAll() {
-            await Promise.all([
-                updateRecentEntries(),
-                renderReport(),
-                renderRank(),
-                renderUser3DChart(),
-                renderAchievementChart(),
-                updateUserDatalist(),
-                loadProfile()
-            ]);
+            try {
+                await Promise.all([
+                    loadProfile(),
+                    updateRecentEntries(),
+                    updateUserDatalist(),
+                    renderReport(),
+                    renderRank()
+                ]);
+            } catch (err) {
+                console.error("Error during initial render:", err);
+            }
         }
 
         // ===== SUPABASE HELPERS =====
@@ -780,9 +790,7 @@
                     updateRecentEntries(),
                     updateUserDatalist(),
                     renderReport(),
-                    renderRank(),
-                    renderUser3DChart(),
-                    renderAchievementChart()
+                    renderRank()
                 ]);
                 showToast(`✅ Gift Rp ${newEntry.gift_amount.toLocaleString()} berhasil dikirim ke ${recipient}!`, 'success');
             } catch (err) {
@@ -831,8 +839,9 @@
             document.getElementById('entryUsername').value = '';
             document.getElementById('entryGift').value = '';
             document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('checkResult').className = 'check-result';
-            document.getElementById('checkResult').style.display = 'none';
+            const checkResult = document.getElementById('checkResult');
+            checkResult.className = 'check-result';
+            checkResult.style.display = 'none';
         }
 
         function setQuickDate(type) {
@@ -853,6 +862,7 @@
 
         async function updateRecentEntries() {
             const container = document.getElementById('recentEntries');
+            if (!container) return;
             const entries = await getEntries();
             const sorted = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 20);
 
@@ -877,12 +887,14 @@
             const entries = await getEntries();
             const users = [...new Set(entries.map(e => e.username))];
             const datalist = document.getElementById('userList');
-            datalist.innerHTML = users.map(u => `<option value="${u}">`).join('');
+            if (datalist) datalist.innerHTML = users.map(u => `<option value="${u}">`).join('');
         }
 
         // ===== REPORT DATA =====
         async function renderReport() {
-            const date = document.getElementById('reportDate').value;
+            const reportDateInput = document.getElementById('reportDate');
+            if (!reportDateInput) return;
+            const date = reportDateInput.value;
             const { data: entries, error } = await supabase
                 .from(TABLE_ENTRIES)
                 .select('*')
@@ -891,6 +903,7 @@
             if (error) { showToast('❌ Error saat load report: ' + error.message, 'error'); return; }
 
             const tableBody = document.getElementById('reportTableBody');
+            if (!tableBody) return;
 
             if (entries.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:30px;">Tidak ada data untuk tanggal ini</td></tr>';
@@ -999,6 +1012,8 @@
             const podiumContainer = document.getElementById('podiumContainer');
             const rankList = document.getElementById('rankList');
 
+            if (!podiumContainer || !rankList) return;
+
             if (sorted.length === 0) {
                 podiumContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><p>Belum ada data ranking</p></div>';
                 rankList.innerHTML = '<div class="empty-state"><p>Belum ada data</p></div>';
@@ -1051,7 +1066,7 @@
         // ===== 3D CHARTS =====
         async function renderUser3DChart() {
             const chartDom = document.getElementById('userChart3D');
-            if (!chartDom || !chartDom.clientWidth) return;
+            if (!chartDom || chartDom.clientHeight === 0) return;
 
             const startDate = document.getElementById('chartStartDate').value;
             const endDate = document.getElementById('chartEndDate').value;
@@ -1177,12 +1192,6 @@
                         color: '#fdcb6e',
                         borderWidth: 1,
                         borderColor: 'rgba(255,255,255,0.5)'
-                    },
-                    emphasis: {
-                        lineStyle: {
-                            width: 5,
-                            color: '#fd79a8'
-                        }
                     }
                 }]
             };
@@ -1193,7 +1202,7 @@
 
         async function renderAchievementChart() {
             const chartDom = document.getElementById('achievementChart');
-            if (!chartDom || !chartDom.clientWidth) return;
+            if (!chartDom) return;
 
             const startDate = document.getElementById('achStartDate').value;
             const endDate = document.getElementById('achEndDate').value;
@@ -1232,11 +1241,7 @@
             }
 
             const maxVal = Math.max(...lineData.map(d => d[2])) || 1;
-            const recipientColors = {
-                'Theo': '#6c5ce7',
-                'Kevin': '#00b894',
-                'Daddy': '#fdcb6e'
-            };
+            const recipientColors = { 'Theo': '#6c5ce7', 'Kevin': '#00b894', 'Daddy': '#fdcb6e' };
 
             if (typeof echarts === 'undefined') return;
             const chart = echarts.init(chartDom);
@@ -1253,9 +1258,7 @@
                     dimension: 2,
                     min: 0,
                     max: maxVal,
-                    inRange: {
-                        color: ['#6c5ce7', '#00b894', '#fdcb6e', '#ff6b6b']
-                    }
+                    inRange: { color: ['#6c5ce7', '#00b894', '#fdcb6e', '#ff6b6b'] }
                 },
                 xAxis3D: {
                     type: 'category',
@@ -1294,32 +1297,17 @@
                     boxWidth: 160,
                     boxDepth: 70,
                     boxHeight: 100,
-                    axisPointer: {
-                        show: true,
-                        lineStyle: { color: '#fdcb6e' }
-                    },
+                    axisPointer: { show: true, lineStyle: { color: '#fdcb6e' } },
                     light: {
-                        main: {
-                            intensity: 1.3,
-                            shadow: true,
-                            shadowQuality: 'high',
-                            alpha: 45,
-                            beta: 35
-                        },
-                        ambient: {
-                            intensity: 0.5
-                        }
+                        main: { intensity: 1.3, shadow: true, shadowQuality: 'high', alpha: 45, beta: 35 },
+                        ambient: { intensity: 0.5 }
                     },
                     environment: 'transparent'
                 },
                 series: [{
                     type: 'line3D',
                     data: lineData,
-                    lineStyle: {
-                        width: 3,
-                        color: '#fdcb6e',
-                        opacity: 0.85
-                    },
+                    lineStyle: { width: 3, color: '#fdcb6e', opacity: 0.85 },
                     symbolSize: 10,
                     symbol: 'diamond',
                     itemStyle: {
@@ -1329,12 +1317,6 @@
                         },
                         borderWidth: 2,
                         borderColor: 'rgba(255,255,255,0.6)'
-                    },
-                    emphasis: {
-                        lineStyle: {
-                            width: 5,
-                            color: '#ff6b6b'
-                        }
                     }
                 }]
             };
@@ -1343,25 +1325,27 @@
             window.addEventListener('resize', () => chart.resize());
 
             const summaryContainer = document.getElementById('achievementSummary');
-            const summaryHTML = recipients.map(rec => {
-                const total = entries.filter(e => e.recipient === rec).reduce((sum, e) => sum + e.gift_amount, 0);
-                const count = entries.filter(e => e.recipient === rec).length;
-                const color = recipientColors[rec];
-                return `
-                    <div style="flex:1;min-width:150px;padding:20px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid ${color}40;text-align:center;">
-                        <div style="font-size:35px;margin-bottom:8px;">${rec === 'Theo' ? '🧑‍💼' : rec === 'Kevin' ? '🧑‍🎤' : '🧑‍🦳'}</div>
-                        <div style="font-weight:700;font-size:16px;color:${color};">${rec}</div>
-                        <div style="font-size:20px;font-weight:800;margin:8px 0;color:var(--accent-gold);">Rp ${total.toLocaleString()}</div>
-                        <div style="font-size:12px;color:var(--text-muted);">${count} entry</div>
-                    </div>
-                `;
-            }).join('');
-            summaryContainer.innerHTML = summaryHTML;
+            if (summaryContainer) {
+                summaryContainer.innerHTML = recipients.map(rec => {
+                    const total = entries.filter(e => e.recipient === rec).reduce((sum, e) => sum + e.gift_amount, 0);
+                    const count = entries.filter(e => e.recipient === rec).length;
+                    const color = recipientColors[rec];
+                    return `
+                        <div style="flex:1;min-width:150px;padding:20px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid ${color}40;text-align:center;">
+                            <div style="font-size:35px;margin-bottom:8px;">${rec === 'Theo' ? '🧑‍💼' : rec === 'Kevin' ? '🧑‍🎤' : '🧑‍🦳'}</div>
+                            <div style="font-weight:700;font-size:16px;color:${color};">${rec}</div>
+                            <div style="font-size:20px;font-weight:800;margin:8px 0;color:var(--accent-gold);">Rp ${total.toLocaleString()}</div>
+                            <div style="font-size:12px;color:var(--text-muted);">${count} entry</div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         // ===== TOAST =====
         function showToast(message, type) {
             const container = document.getElementById('toastContainer');
+            if (!container) return;
             const toast = document.createElement('div');
             toast.classList.add('toast', type);
             const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
