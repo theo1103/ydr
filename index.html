@@ -73,7 +73,7 @@
             margin-bottom: 8px;
             font-weight: 600;
         }
-        input[type="text"], input[type="number"], input[type="file"], input[type="date"] {
+        input[type="text"], input[type="number"], input[type="file"], input[type="date"], select {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid #d1d5db;
@@ -130,7 +130,7 @@
             background-color: #e0e7ff !important;
             font-weight: bold;
         }
-        .chart-controls {
+        .chart-controls, .report-controls {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
@@ -177,10 +177,21 @@
             </form>
         </div>
 
-        <!-- Tab 2: Report List dengan Waktu Input -->
+        <!-- Tab 2: Report List dengan Waktu Input, Filter & Sort -->
         <div id="reportTab" class="tab-content">
-            <div style="margin-bottom: 15px;">
-                <input type="text" id="searchNama" placeholder="Cari nama subject..." onkeyup="renderTable()">
+            <div class="report-controls">
+                <div style="flex: 2;">
+                    <input type="text" id="searchNama" placeholder="Cari nama subject..." onkeyup="renderTable()">
+                </div>
+                <div style="flex: 2;">
+                    <select id="sortSelect" onchange="renderTable()">
+                        <option value="name_asc">Urutkan: Nama (A-Z)</option>
+                        <option value="name_desc">Urutkan: Nama (Z-A)</option>
+                        <option value="total_desc">Urutkan: Total Gift (Tertinggi)</option>
+                        <option value="total_asc">Urutkan: Total Gift (Terendah)</option>
+                        <option value="time_desc">Urutkan: Waktu (Terbaru)</option>
+                    </select>
+                </div>
             </div>
             <button class="btn-danger" onclick="resetData()">Reset Semua Data</button>
 
@@ -303,12 +314,12 @@
         // Handle Submit Form dengan Tanggal Custom & Jam Otomatis
         document.getElementById('giftForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const selectedDate = document.getElementById('inputDate').value; // Mengambil tanggal dari input
+            const selectedDate = document.getElementById('inputDate').value;
             const nama = document.getElementById('nama').value.trim();
             const jumlah = parseInt(document.getElementById('jumlah').value);
             
             const now = new Date();
-            const timeString = now.toTimeString().split(' ')[0]; // Jam saat diinput
+            const timeString = now.toTimeString().split(' ')[0];
             const fullDateTime = `${selectedDate} ${timeString}`;
 
             if(!giftData[selectedDate]) giftData[selectedDate] = {};
@@ -321,7 +332,6 @@
             
             saveData();
             
-            // Reset nama dan jumlah saja, pertahankan tanggal agar mudah input history beruntun
             document.getElementById('nama').value = '';
             document.getElementById('jumlah').value = '';
             document.getElementById('nama').focus();
@@ -329,11 +339,12 @@
             alert(`Data Berhasil Disimpan untuk tanggal ${selectedDate}!`);
         });
 
-        // Render Tabel Report dengan Tanggal & Jam Input
+        // Render Tabel Report dengan Fitur Sort, Filter, dan Auto Numbering
         function renderTable() {
             const tableBody = document.getElementById('giftTableBody');
             tableBody.innerHTML = '';
             const keyword = document.getElementById('searchNama').value.toLowerCase();
+            const sortBy = document.getElementById('sortSelect').value;
 
             const aggregated = {};
             let grandTotal = 0;
@@ -354,7 +365,24 @@
             const allNames = Object.keys(aggregated);
             allNames.forEach(name => grandTotal += aggregated[name].total);
 
-            const filteredNames = allNames.filter(name => name.toLowerCase().includes(keyword));
+            // Filter berdasarkan Nama
+            let filteredNames = allNames.filter(name => name.toLowerCase().includes(keyword));
+
+            // Proses Sorting / Pengurutan
+            filteredNames.sort((a, b) => {
+                if (sortBy === 'name_asc') {
+                    return a.localeCompare(b);
+                } else if (sortBy === 'name_desc') {
+                    return b.localeCompare(a);
+                } else if (sortBy === 'total_desc') {
+                    return aggregated[b].total - aggregated[a].total;
+                } else if (sortBy === 'total_asc') {
+                    return aggregated[a].total - aggregated[b].total;
+                } else if (sortBy === 'time_desc') {
+                    return aggregated[b].lastTime.localeCompare(aggregated[a].lastTime);
+                }
+                return 0;
+            });
 
             if (allNames.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="4" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>`;
