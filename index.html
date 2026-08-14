@@ -144,7 +144,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>Manajemen Gift Pro</h2>
+        <h2>Yadoru Apps</h2>
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('input')">Input & Scan</button>
             <button class="tab-btn" onclick="switchTab('report')">Report List & Waktu</button>
@@ -160,6 +160,11 @@
             </div>
 
             <form id="giftForm">
+                <div class="form-group">
+                    <label for="inputDate">Tanggal Transaksi / Input</label>
+                    <input type="date" id="inputDate" required>
+                </div>
+
                 <div class="form-group">
                     <label for="nama">Nama Subject</label>
                     <input type="text" id="nama" placeholder="Contoh: Zaki" required autocomplete="off">
@@ -213,7 +218,12 @@
     </div>
 
     <script>
-        // Struktur data: giftData[dateString] = { namaUser: { total: angka, lastTime: "YYYY-MM-DD HH:mm:ss" } }
+        // Inisialisasi tanggal hari ini pada form saat halaman pertama kali dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('inputDate').value = todayStr;
+        });
+
         let giftData = JSON.parse(localStorage.getItem('giftDataPro')) || {};
 
         function saveData() {
@@ -290,28 +300,33 @@
             }
         }
 
-        // Handle Submit Form & Akumulasi Tanggal + Jam Otomatis
+        // Handle Submit Form dengan Tanggal Custom & Jam Otomatis
         document.getElementById('giftForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            const selectedDate = document.getElementById('inputDate').value; // Mengambil tanggal dari input
             const nama = document.getElementById('nama').value.trim();
             const jumlah = parseInt(document.getElementById('jumlah').value);
             
             const now = new Date();
-            const dateString = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-            const timeString = now.toTimeString().split(' ')[0]; // Format: HH:mm:ss
-            const fullDateTime = `${dateString} ${timeString}`;
+            const timeString = now.toTimeString().split(' ')[0]; // Jam saat diinput
+            const fullDateTime = `${selectedDate} ${timeString}`;
 
-            if(!giftData[dateString]) giftData[dateString] = {};
-            if(!giftData[dateString][nama]) {
-                giftData[dateString][nama] = { total: 0, lastTime: fullDateTime };
+            if(!giftData[selectedDate]) giftData[selectedDate] = {};
+            if(!giftData[selectedDate][nama]) {
+                giftData[selectedDate][nama] = { total: 0, lastTime: fullDateTime };
             }
             
-            giftData[dateString][nama].total += jumlah;
-            giftData[dateString][nama].lastTime = fullDateTime; // Update waktu input terakhir
+            giftData[selectedDate][nama].total += jumlah;
+            giftData[selectedDate][nama].lastTime = fullDateTime;
             
             saveData();
-            document.getElementById('giftForm').reset();
-            alert('Data Berhasil Disimpan & Waktu Tercatat!');
+            
+            // Reset nama dan jumlah saja, pertahankan tanggal agar mudah input history beruntun
+            document.getElementById('nama').value = '';
+            document.getElementById('jumlah').value = '';
+            document.getElementById('nama').focus();
+            
+            alert(`Data Berhasil Disimpan untuk tanggal ${selectedDate}!`);
         });
 
         // Render Tabel Report dengan Tanggal & Jam Input
@@ -320,7 +335,6 @@
             tableBody.innerHTML = '';
             const keyword = document.getElementById('searchNama').value.toLowerCase();
 
-            // Gabungkan data dari semua tanggal untuk rekap global
             const aggregated = {};
             let grandTotal = 0;
 
@@ -331,7 +345,6 @@
                         aggregated[name] = { total: 0, lastTime: users[name].lastTime };
                     }
                     aggregated[name].total += users[name].total;
-                    // Ambil waktu yang paling baru
                     if(users[name].lastTime > aggregated[name].lastTime) {
                         aggregated[name].lastTime = users[name].lastTime;
                     }
@@ -399,7 +412,6 @@
             
             if(!startStr || !endStr) return;
 
-            // Buat rentang tanggal (labels) berdasarkan input user
             const labels = [];
             let curr = new Date(startStr);
             const end = new Date(endStr);
@@ -409,7 +421,6 @@
                 curr.setDate(curr.getDate() + 1);
             }
 
-            // Kumpulkan seluruh unique user yang ada di rentang tanggal tersebut
             const uniqueUsers = new Set();
             labels.forEach(date => {
                 if(giftData[date]) {
@@ -417,7 +428,6 @@
                 }
             });
 
-            // Warna otomatis untuk garis masing-masing user
             const colorPalette = ['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
             let colorIdx = 0;
 
@@ -427,7 +437,7 @@
                     if(giftData[date] && giftData[date][user]) {
                         return giftData[date][user].total;
                     }
-                    return 0; // 0 jika di tanggal tersebut user tidak ada transaksi
+                    return 0;
                 });
 
                 const color = colorPalette[colorIdx % colorPalette.length];
