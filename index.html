@@ -222,7 +222,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>Yadoru Barter Apps</h2>
+        <h2>Yadoru Apps</h2>
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('input')">Input & Scan</button>
             <button class="tab-btn" onclick="switchTab('report')">Report List & Waktu</button>
@@ -262,11 +262,11 @@
             <!-- Ringkasan Statistik -->
             <div class="summary-cards">
                 <div class="card-metric">
-                    <span>Total Keseluruhan Gift</span>
+                    <span id="labelStatGift">Total Keseluruhan Gift</span>
                     <h3 id="statTotalGift">0</h3>
                 </div>
                 <div class="card-metric">
-                    <span>Jumlah Subject Aktif</span>
+                    <span id="labelStatSubject">Jumlah Subject Aktif</span>
                     <h3 id="statTotalSubject">0</h3>
                 </div>
             </div>
@@ -471,6 +471,14 @@
             document.getElementById('sort-icon-total').innerText = sortBy === 'total_desc' ? '▼' : (sortBy === 'total_asc' ? '▲' : '↕');
             document.getElementById('sort-icon-time').innerText = sortBy === 'time_desc' ? '▼' : (sortBy === 'time_asc' ? '▲' : '↕');
 
+            const allDates = Object.keys(giftData).sort();
+
+            // Tentukan tanggal target: jika filter dipilih gunakan itu, jika tidak gunakan tanggal terkini (terakhir) di sistem
+            let targetDate = filterDate;
+            if (!targetDate && allDates.length > 0) {
+                targetDate = allDates[allDates.length - 1];
+            }
+
             const aggregated = {};
             let grandTotal = 0;
 
@@ -492,7 +500,20 @@
             });
 
             const allNames = Object.keys(aggregated);
-            allNames.forEach(name => grandTotal += aggregated[name].total);
+            
+            // Hitung total gift berdasarkan tanggal yang difilter atau tanggal terkini secara otomatis
+            if (targetDate && giftData[targetDate]) {
+                Object.values(giftData[targetDate]).forEach(item => {
+                    grandTotal += item.total;
+                });
+                if (filterDate) {
+                    document.getElementById('labelStatGift').innerText = `Total Gift (Tanggal: ${targetDate})`;
+                } else {
+                    document.getElementById('labelStatGift').innerText = `Total Gift (Terkini: ${targetDate})`;
+                }
+            } else {
+                document.getElementById('labelStatGift').innerText = "Total Keseluruhan Gift";
+            }
 
             // Update Statistik Cards
             document.getElementById('statTotalGift').innerText = grandTotal.toLocaleString();
