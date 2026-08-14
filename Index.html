@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiftMaster Pro - Supabase Edition</title>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- ECharts & ECharts GL -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ... (CSS sama persis seperti sebelumnya, tidak diubah) ... */
+        /* Saya sertakan ulang untuk kemudahan, namun bisa di-copy dari kode sebelumnya */
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #111128;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-glass: rgba(255, 255, 255, 0.06);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8d0;
+            --text-muted: #7a7a9a;
+            --accent-purple: #6c5ce7;
+            --accent-purple-light: #a29bfe;
+            --accent-pink: #fd79a8;
+            --accent-gold: #fdcb6e;
+            --accent-green: #00b894;
+            --accent-red: #ff6b6b;
+            --accent-cyan: #00cec9;
+            --gradient-main: linear-gradient(135deg, #6c5ce7, #fd79a8, #fdcb6e);
+            --gradient-hero: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+            --shadow-glow: 0 0 40px rgba(108, 92, 231, 0.3);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* ... (seluruh CSS dari kode sebelumnya tetap) ... */
+    </style>
+</head>
+<body>
+
+    <!-- PARTICLES BACKGROUND -->
+    <div class="particles-container" id="particlesContainer"></div>
+
+    <!-- LOGIN PAGE -->
+    <div class="login-page" id="loginPage">
+        <div class="login-card">
+            <div class="login-logo">🎁</div>
+            <h1 class="login-title">GiftMaster Pro</h1>
+            <p class="login-subtitle">Data Entry & Achievement Tracker (Supabase)</p>
+            <form id="loginForm" autocomplete="off">
+                <div class="login-input-group">
+                    <span class="login-input-icon">👤</span>
+                    <input type="text" id="loginUsername" placeholder="Username" required>
+                </div>
+                <div class="login-input-group">
+                    <span class="login-input-icon">🔒</span>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                </div>
+                <div class="login-error" id="loginError">❌ Invalid username or password!</div>
+                <button type="submit" class="login-btn">
+                    <span class="btn-shine"></span>
+                    Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="loader-spinner"></div>
+        <div class="loader-text" id="loadingText">LOADING...</div>
+        <div class="loader-progress">
+            <div class="loader-progress-bar" id="loaderProgressBar"></div>
+        </div>
+    </div>
+
+    <!-- LOGOUT OVERLAY -->
+    <div class="logout-overlay" id="logoutOverlay">
+        <div class="logout-icon">👋</div>
+        <div class="logout-text">LOGGING OUT...</div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="main-app" id="mainApp">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <span>🎁</span>
+                <h2>GiftMaster</h2>
+                <p>Pro Tracker</p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="profile">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-label">Profile</span>
+                </button>
+                <button class="nav-item" data-page="entry">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-label">Entry Data</span>
+                </button>
+                <button class="nav-item" data-page="report">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Report Data</span>
+                </button>
+                <button class="nav-item" data-page="rank">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-label">Gift Rank</span>
+                </button>
+                <button class="nav-item" data-page="achievement">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-label">Total Achievement</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="logoutBtn">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- PROFILE PAGE -->
+            <section class="page-section active" id="page-profile">
+                <div class="page-header">
+                    <h1>👤 My Profile</h1>
+                    <p>Kelola data profil akun pengguna Anda</p>
+                </div>
+                <div class="profile-container">
+                    <div class="card profile-photo-card">
+                        <div class="profile-photo-wrapper" id="photoWrapper" onclick="document.getElementById('photoInput').click()">
+                            <img id="photoPreview" src="" alt="Profile Photo" style="display:none;">
+                            <div class="profile-photo-placeholder" id="photoPlaceholder">👤</div>
+                            <div class="profile-photo-overlay">📷 Upload Foto</div>
+                        </div>
+                        <input type="file" id="photoInput" class="profile-photo-input" accept="image/*">
+                        <div class="profile-name-display" id="profileNameDisplay">Nama Pengguna</div>
+                        <div class="profile-role">GiftMaster Member</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📋 Biodata Lengkap</div>
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <input type="text" id="profileName" placeholder="Masukkan nama lengkap">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="profileEmail" placeholder="example@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label>No. Telepon</label>
+                            <input type="tel" id="profilePhone" placeholder="+62 xxx xxxx xxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>Alamat</label>
+                            <textarea id="profileAddress" placeholder="Masukkan alamat lengkap"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Lahir</label>
+                            <input type="date" id="profileBirthday">
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Kelamin</label>
+                            <select id="profileGender">
+                                <option value="">Pilih jenis kelamin</option>
+                                <option value="Pria">Pria</option>
+                                <option value="Wanita">Wanita</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pekerjaan</label>
+                            <input type="text" id="profileOccupation" placeholder="Masukkan pekerjaan">
+                        </div>
+                        <div class="form-group">
+                            <label>Bio Singkat</label>
+                            <textarea id="profileBio" placeholder="Ceritakan tentang diri Anda..."></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="saveProfile()">💾 Simpan Profil</button>
+                            <button class="btn btn-secondary" onclick="loadProfile()">🔄 Reload</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ENTRY DATA PAGE -->
+            <section class="page-section" id="page-entry">
+                <div class="page-header">
+                    <h1>📝 Entry Data Gift</h1>
+                    <p>Input data gift harian Anda dengan cepat dan akurat</p>
+                </div>
+                <div class="entry-grid">
+                    <div class="card">
+                        <div class="card-title">🎯 Form Input Gift</div>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="entryUsername" placeholder="Masukkan username" list="userList">
+                            <datalist id="userList"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Gift</label>
+                            <input type="number" id="entryGift" placeholder="Masukkan jumlah gift" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Input</label>
+                            <input type="date" id="entryDate">
+                        </div>
+                        <div class="quick-date-btns">
+                            <button class="quick-date-btn" onclick="setQuickDate('today')">📅 Hari Ini</button>
+                            <button class="quick-date-btn" onclick="setQuickDate('yesterday')">📅 Kemarin</button>
+                            <button class="quick-date-btn" onclick="setQuickDate('7days')">📅 7 Hari Lalu</button>
+                            <button class="quick-date-btn" onclick="setQuickDate('30days')">📅 30 Hari Lalu</button>
+                        </div>
+                        <div class="check-result" id="checkResult"></div>
+                        <div class="btn-group" style="margin-top:20px;">
+                            <button class="btn btn-primary" onclick="saveEntry()">💾 Save</button>
+                            <button class="btn btn-secondary" onclick="checkEntry()">🔍 Check</button>
+                            <button class="btn btn-success" onclick="clearEntryForm()">✨ Clear</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📋 Data Terkini</div>
+                        <div id="recentEntries" style="max-height:400px;overflow-y:auto;">
+                            <div class="empty-state">
+                                <div class="empty-icon">📭</div>
+                                <p>Belum ada data entry</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REPORT DATA PAGE -->
+            <section class="page-section" id="page-report">
+                <div class="page-header">
+                    <h1>📊 Report Data</h1>
+                    <p>Lihat laporan gift harian dan grafik performa</p>
+                </div>
+                <div class="card" style="margin-bottom:25px;">
+                    <div class="card-title">📅 Filter Laporan</div>
+                    <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:flex-end;">
+                        <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px;">
+                            <label>Tanggal</label>
+                            <input type="date" id="reportDate" onchange="renderReport()">
+                        </div>
+                        <div class="btn-group" style="margin-top:0;">
+                            <button class="btn btn-primary" onclick="renderReport()">🔍 Tampilkan</button>
+                            <button class="btn btn-success" onclick="downloadCSV()">📥 Download CSV</button>
+                            <button class="btn btn-secondary" onclick="downloadTXT()">📥 Download TXT</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="margin-bottom:25px;">
+                    <div class="card-title">📋 Laporan Harian</div>
+                    <div id="reportSummary" style="margin-bottom:15px;"></div>
+                    <div style="overflow-x:auto;">
+                        <table class="report-table" id="reportTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Username</th>
+                                    <th>Total Gift</th>
+                                    <th>Penerima</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📈 Grafik 3D Harian User</div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+                        <input type="date" id="chartStartDate" style="padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass);border-radius:8px;color:white;">
+                        <span style="color:var(--text-muted);align-self:center;">s/d</span>
+                        <input type="date" id="chartEndDate" style="padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass);border-radius:8px;color:white;">
+                        <button class="btn btn-primary btn-sm" onclick="renderUser3DChart()">🔄 Update Grafik</button>
+                    </div>
+                    <div class="chart-container" id="userChart3D"></div>
+                </div>
+            </section>
+
+            <!-- GIFT RANK PAGE -->
+            <section class="page-section" id="page-rank">
+                <div class="page-header">
+                    <h1>🏆 Gift Rank</h1>
+                    <p>Peringkat pemberi gift terbanyak</p>
+                </div>
+                <div class="podium-container" id="podiumContainer"></div>
+                <div class="card">
+                    <div class="card-title">📋 Daftar Peringkat Lengkap</div>
+                    <div class="rank-list" id="rankList"></div>
+                </div>
+            </section>
+
+            <!-- TOTAL ACHIEVEMENT PAGE -->
+            <section class="page-section" id="page-achievement">
+                <div class="page-header">
+                    <h1>📈 Total Achievement</h1>
+                    <p>Grafik total gift yang diberikan kepada masing-masing penerima</p>
+                </div>
+                <div class="card">
+                    <div class="card-title">🎯 Grafik 3D Achievement Penerima</div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+                        <input type="date" id="achStartDate" style="padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass);border-radius:8px;color:white;">
+                        <span style="color:var(--text-muted);align-self:center;">s/d</span>
+                        <input type="date" id="achEndDate" style="padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass);border-radius:8px;color:white;">
+                        <button class="btn btn-primary btn-sm" onclick="renderAchievementChart()">🔄 Update Grafik</button>
+                    </div>
+                    <div class="chart-container" id="achievementChart"></div>
+                </div>
+                <div class="card" style="margin-top:25px;">
+                    <div class="card-title">📊 Ringkasan Total Per Penerima</div>
+                    <div id="achievementSummary" style="display:flex;gap:20px;flex-wrap:wrap;margin-top:15px;"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- GIFT SEND TO MODAL -->
+    <div class="modal-overlay" id="giftSendModal">
+        <div class="modal-content">
+            <div class="modal-title">🎁 Gift Send To</div>
+            <div class="modal-subtitle">Pilih penerima gift untuk entry ini</div>
+            <div class="recipient-options" id="recipientOptions">
+                <div class="recipient-card" onclick="selectRecipient('Theo')">
+                    <div class="recipient-avatar">🧑‍💼</div>
+                    <div class="recipient-name">Theo</div>
+                    <div class="recipient-desc">Penerima Utama</div>
+                </div>
+                <div class="recipient-card" onclick="selectRecipient('Kevin')">
+                    <div class="recipient-avatar">🧑‍🎤</div>
+                    <div class="recipient-name">Kevin</div>
+                    <div class="recipient-desc">Penerima Kedua</div>
+                </div>
+                <div class="recipient-card" onclick="selectRecipient('Daddy')">
+                    <div class="recipient-avatar">🧑‍🦳</div>
+                    <div class="recipient-name">Daddy</div>
+                    <div class="recipient-desc">Penerima Ketiga</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" style="margin-top:20px;" onclick="closeGiftModal()">Batal</button>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // ===== SUPABASE CONFIGURATION =====
+        const SUPABASE_URL = 'https://dvfmlvueexnvgcnoiujr.supabase.co'; // Ganti dengan URL proyek Supabase Anda, contoh: 'https://dvfmlvueexnvgcnoiujr.supabase.co'
+        const SUPABASE_ANON_KEY = 'sb_publishable_KoCuMn0yU7Yp72mnNB0_jw_L3wupUq-'; // Publishable key yang diberikan
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ===== TABLE NAMES =====
+        const TABLE_PROFILES = 'profiles';
+        const TABLE_ENTRIES = 'gift_entries';
+
+        // ===== GLOBAL STATE =====
+        let pendingEntryData = null;
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', async function() {
+            createParticles();
+            initializeDateInputs();
+            await loadProfile();
+            await Promise.all([
+                updateRecentEntries(),
+                renderReport(),
+                renderRank(),
+                renderUser3DChart(),
+                renderAchievementChart(),
+                updateUserDatalist()
+            ]);
+        });
+
+        // ... (Fungsi createParticles, initializeDateInputs, setQuickDate, dll tetap sama) ...
+
+        function createParticles() {
+            const container = document.getElementById('particlesContainer');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (8 + Math.random() * 12) + 's';
+                particle.style.width = particle.style.height = (2 + Math.random() * 4) + 'px';
+                particle.style.background = ['#6c5ce7', '#fd79a8', '#fdcb6e', '#00cec9'][Math.floor(Math.random() * 4)];
+                container.appendChild(particle);
+            }
+        }
+
+        function initializeDateInputs() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('entryDate').value = today;
+            document.getElementById('reportDate').value = today;
+
+            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('chartStartDate').value = weekAgo;
+            document.getElementById('chartEndDate').value = today;
+            document.getElementById('achStartDate').value = weekAgo;
+            document.getElementById('achEndDate').value = today;
+        }
+
+        function setQuickDate(type) {
+            const now = new Date();
+            let targetDate;
+            switch (type) {
+                case 'today':
+                    targetDate = now;
+                    break;
+                case 'yesterday':
+                    targetDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                    break;
+                case '7days':
+                    targetDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    break;
+                case '30days':
+                    targetDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    break;
+            }
+            document.getElementById('entryDate').value = targetDate.toISOString().split('T')[0];
+        }
+
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+
+        // ===== SUPABASE HELPERS =====
+        async function getEntries() {
+            const { data, error } = await supabase
+                .from(TABLE_ENTRIES)
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) {
+                console.error('Error fetching entries:', error);
+                return [];
+            }
+            return data || [];
+        }
+
+        async function addEntry(entry) {
+            const { data, error } = await supabase
+                .from(TABLE_ENTRIES)
+                .insert([entry])
+                .select();
+            if (error) {
+                console.error('Error inserting entry:', error);
+                throw error;
+            }
+            return data;
+        }
+
+        async function getProfile() {
+            const { data, error } = await supabase
+                .from(TABLE_PROFILES)
+                .select('*')
+                .limit(1)
+                .single();
+            if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+                console.error('Error fetching profile:', error);
+                return null;
+            }
+            return data;
+        }
+
+        async function saveProfileData(profile) {
+            // Upsert profile (assume single user, use fixed id '1' or use current profile id)
+            const { data, error } = await supabase
+                .from(TABLE_PROFILES)
+                .upsert({ id: 1, ...profile }, { onConflict: 'id' });
+            if (error) {
+                console.error('Error saving profile:', error);
+                throw error;
+            }
+            return data;
+        }
+
+        // ===== LOGIN =====
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+
+            if (username === 'theo' && password === 'theo@2026') {
+                errorEl.style.display = 'none';
+                showLoadingAndEnter();
+            } else {
+                errorEl.style.display = 'block';
+                errorEl.textContent = '❌ Invalid username or password!';
+            }
+        });
+
+        function showLoadingAndEnter() {
+            const loginPage = document.getElementById('loginPage');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const progressBar = document.getElementById('loaderProgressBar');
+
+            loginPage.classList.add('hidden');
+
+            setTimeout(() => {
+                loadingOverlay.classList.remove('hidden');
+                const loadingMessages = ['LOADING...', 'MEMUAT DATA...', 'MENYIAPKAN DASHBOARD...', 'HAMPIR SELESAI...'];
+                let msgIndex = 0;
+                const msgInterval = setInterval(() => {
+                    msgIndex = (msgIndex + 1) % loadingMessages.length;
+                    loadingText.textContent = loadingMessages[msgIndex];
+                }, 600);
+
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 15 + 5;
+                    if (progress > 100) progress = 100;
+                    progressBar.style.width = progress + '%';
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                        clearInterval(msgInterval);
+                        setTimeout(async () => {
+                            loadingOverlay.classList.add('hidden');
+                            const mainApp = document.getElementById('mainApp');
+                            mainApp.classList.add('visible');
+                            showToast('✅ Login berhasil! Selamat datang Theo!', 'success');
+                            await renderAll();
+                        }, 500);
+                    }
+                }, 200);
+            }, 400);
+        }
+
+        // ===== LOGOUT =====
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            const logoutOverlay = document.getElementById('logoutOverlay');
+            logoutOverlay.classList.add('active');
+
+            setTimeout(() => {
+                logoutOverlay.classList.remove('active');
+                const mainApp = document.getElementById('mainApp');
+                mainApp.classList.remove('visible');
+                const loginPage = document.getElementById('loginPage');
+                loginPage.classList.remove('hidden');
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
+            }, 1800);
+        });
+
+        // ===== NAVIGATION =====
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const page = this.dataset.page;
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.page-section').forEach(section => section.classList.remove(
+                    'active'));
+                document.getElementById('page-' + page).classList.add('active');
+                if (page === 'report') {
+                    setTimeout(() => renderUser3DChart(), 100);
+                    setTimeout(() => renderReport(), 100);
+                } else if (page === 'achievement') {
+                    setTimeout(() => renderAchievementChart(), 100);
+                } else if (page === 'rank') {
+                    setTimeout(() => renderRank(), 100);
+                } else if (page === 'entry') {
+                    setTimeout(() => updateRecentEntries(), 100);
+                    updateUserDatalist();
+                }
+            });
+        });
+
+        async function renderAll() {
+            await Promise.all([
+                updateRecentEntries(),
+                renderReport(),
+                renderRank(),
+                renderUser3DChart(),
+                renderAchievementChart(),
+                updateUserDatalist()
+            ]);
+        }
+
+        // ===== PROFILE =====
+        async function loadProfile() {
+            const profile = await getProfile();
+            if (!profile) return;
+            document.getElementById('profileName').value = profile.name || '';
+            document.getElementById('profileEmail').value = profile.email || '';
+            document.getElementById('profilePhone').value = profile.phone || '';
+            document.getElementById('profileAddress').value = profile.address || '';
+            document.getElementById('profileBirthday').value = profile.birthday || '';
+            document.getElementById('profileGender').value = profile.gender || '';
+            document.getElementById('profileOccupation').value = profile.occupation || '';
+            document.getElementById('profileBio').value = profile.bio || '';
+            if (profile.photo) {
+                document.getElementById('photoPreview').src = profile.photo;
+                document.getElementById('photoPreview').style.display = 'block';
+                document.getElementById('photoPlaceholder').style.display = 'none';
+            }
+            document.getElementById('profileNameDisplay').textContent = profile.name || 'Nama Pengguna';
+        }
+
+        async function saveProfile() {
+            const profile = {
+                name: document.getElementById('profileName').value.trim(),
+                email: document.getElementById('profileEmail').value.trim(),
+                phone: document.getElementById('profilePhone').value.trim(),
+                address: document.getElementById('profileAddress').value.trim(),
+                birthday: document.getElementById('profileBirthday').value,
+                gender: document.getElementById('profileGender').value,
+                occupation: document.getElementById('profileOccupation').value.trim(),
+                bio: document.getElementById('profileBio').value.trim(),
+                photo: document.getElementById('photoPreview').src || ''
+            };
+
+            if (!profile.name) {
+                showToast('⚠️ Nama lengkap wajib diisi!', 'warning');
+                return;
+            }
+
+            try {
+                await saveProfileData(profile);
+                document.getElementById('profileNameDisplay').textContent = profile.name;
+                showToast('✅ Profil berhasil disimpan ke Supabase!', 'success');
+            } catch (err) {
+                showToast('❌ Gagal menyimpan profil: ' + err.message, 'error');
+            }
+        }
+
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('photoPreview').src = e.target.result;
+                    document.getElementById('photoPreview').style.display = 'block';
+                    document.getElementById('photoPlaceholder').style.display = 'none';
+                    showToast('📷 Foto berhasil diupload (belum disimpan)!', 'info');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // ===== ENTRY DATA =====
+        async function saveEntry() {
+            const username = document.getElementById('entryUsername').value.trim();
+            const giftAmount = parseFloat(document.getElementById('entryGift').value);
+            const date = document.getElementById('entryDate').value;
+
+            if (!username) {
+                showToast('⚠️ Username wajib diisi!', 'warning');
+                return;
+            }
+            if (!giftAmount || giftAmount <= 0) {
+                showToast('⚠️ Total gift harus lebih dari 0!', 'warning');
+                return;
+            }
+            if (!date) {
+                showToast('⚠️ Tanggal wajib diisi!', 'warning');
+                return;
+            }
+
+            pendingEntryData = { username, giftAmount, date };
+            document.getElementById('giftSendModal').classList.add('active');
+        }
+
+        function closeGiftModal() {
+            document.getElementById('giftSendModal').classList.remove('active');
+            pendingEntryData = null;
+        }
+
+        async function selectRecipient(recipient) {
+            if (!pendingEntryData) return;
+
+            const newEntry = {
+                id: generateId(),
+                username: pendingEntryData.username,
+                gift_amount: pendingEntryData.giftAmount,
+                date: pendingEntryData.date,
+                recipient: recipient,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                await addEntry(newEntry);
+                document.getElementById('giftSendModal').classList.remove('active');
+                pendingEntryData = null;
+
+                clearEntryForm();
+                await Promise.all([
+                    updateRecentEntries(),
+                    updateUserDatalist(),
+                    renderReport(),
+                    renderRank(),
+                    renderUser3DChart(),
+                    renderAchievementChart()
+                ]);
+                showToast(`✅ Gift Rp ${newEntry.gift_amount.toLocaleString()} berhasil dikirim ke ${recipient}!`, 'success');
+            } catch (err) {
+                showToast('❌ Gagal menyimpan entry: ' + err.message, 'error');
+            }
+        }
+
+        async function checkEntry() {
+            const username = document.getElementById('entryUsername').value.trim();
+            const date = document.getElementById('entryDate').value;
+            const checkResult = document.getElementById('checkResult');
+
+            if (!username || !date) {
+                showToast('⚠️ Isi username dan tanggal untuk check!', 'warning');
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from(TABLE_ENTRIES)
+                .select('*')
+                .eq('username', username)
+                .eq('date', date);
+
+            if (error) {
+                showToast('❌ Error saat check: ' + error.message, 'error');
+                return;
+            }
+
+            if (data.length > 0) {
+                const totalForDate = data.reduce((sum, e) => sum + e.gift_amount, 0);
+                const recipients = data.map(e => e.recipient).join(', ');
+                checkResult.className = 'check-result found';
+                checkResult.innerHTML = `
+                    <strong>✅ Data ditemukan!</strong><br>
+                    Username: <strong>${username}</strong><br>
+                    Tanggal: <strong>${date}</strong><br>
+                    Total Gift: <strong style="color:var(--accent-gold);">Rp ${totalForDate.toLocaleString()}</strong><br>
+                    Penerima: <strong>${recipients}</strong><br>
+                    <small style="color:var(--text-muted);">Anda dapat mengubah nominal dan menyimpan ulang.</small>
+                `;
+            } else {
+                checkResult.className = 'check-result not-found';
+                checkResult.innerHTML = `
+                    <strong>❌ Data tidak ditemukan!</strong><br>
+                    Belum ada entry untuk username <strong>${username}</strong> pada tanggal <strong>${date}</strong>.<br>
+                    Silakan isi form dan klik Save untuk menambahkan.
+                `;
+            }
+        }
+
+        function clearEntryForm() {
+            document.getElementById('entryUsername').value = '';
+            document.getElementById('entryGift').value = '';
+            document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('checkResult').className = 'check-result';
+            document.getElementById('checkResult').style.display = 'none';
+        }
+
+        async function updateRecentEntries() {
+            const container = document.getElementById('recentEntries');
+            const entries = await getEntries();
+            const sorted = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 20);
+
+            if (sorted.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <p>Belum ada data entry</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = sorted.map(entry => `
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:6px;">
+                    <span style="font-size:18px;">👤</span>
+                    <div style="flex:1;">
+                        <strong style="font-size:13px;">${entry.username}</strong>
+                        <div style="font-size:11px;color:var(--text-muted);">${entry.date} · ${entry.recipient}</div>
+                    </div>
+                    <span style="font-weight:700;color:var(--accent-gold);font-size:14px;">Rp ${entry.gift_amount.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        async function updateUserDatalist() {
+            const entries = await getEntries();
+            const users = [...new Set(entries.map(e => e.username))];
+            const datalist = document.getElementById('userList');
+            datalist.innerHTML = users.map(u => `<option value="${u}">`).join('');
+        }
+
+        // ===== REPORT DATA =====
+        async function renderReport() {
+            const date = document.getElementById('reportDate').value;
+            const { data: entries, error } = await supabase
+                .from(TABLE_ENTRIES)
+                .select('*')
+                .eq('date', date);
+
+            if (error) {
+                showToast('❌ Error saat load report: ' + error.message, 'error');
+                return;
+            }
+
+            const tableBody = document.getElementById('reportTableBody');
+
+            if (entries.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:30px;">Tidak ada data untuk tanggal ini</td></tr>';
+                document.getElementById('reportSummary').innerHTML = '';
+                return;
+            }
+
+            const totalSum = entries.reduce((sum, e) => sum + e.gift_amount, 0);
+
+            document.getElementById('reportSummary').innerHTML = `
+                <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+                    <div>
+                        <span style="color:var(--text-muted);font-size:13px;">Jumlah User:</span>
+                        <strong style="font-size:22px;margin-left:8px;">${entries.length}</strong>
+                    </div>
+                    <div>
+                        <span style="color:var(--text-muted);font-size:13px;">Total Keseluruhan:</span>
+                        <span class="total-highlight">Rp ${totalSum.toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+
+            tableBody.innerHTML = entries.map((entry, index) => {
+                const recipientClass = entry.recipient.toLowerCase();
+                const badgeClass = recipientClass === 'theo' ? 'badge-theo' : recipientClass === 'kevin' ?
+                    'badge-kevin' : 'badge-daddy';
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${entry.username}</strong></td>
+                        <td style="color:var(--accent-gold);font-weight:600;">Rp ${entry.gift_amount.toLocaleString()}</td>
+                        <td><span class="badge-chip ${badgeClass}">${entry.recipient}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function downloadCSV() {
+            const date = document.getElementById('reportDate').value;
+            const { data: entries, error } = await supabase
+                .from(TABLE_ENTRIES)
+                .select('*')
+                .eq('date', date);
+
+            if (error || entries.length === 0) {
+                showToast('⚠️ Tidak ada data untuk didownload!', 'warning');
+                return;
+            }
+
+            const totalSum = entries.reduce((sum, e) => sum + e.gift_amount, 0);
+            let csv = 'No,Username,Total Gift,Recipient,Date\n';
+            entries.forEach((e, i) => {
+                csv += `${i+1},"${e.username}",${e.gift_amount},"${e.recipient}","${e.date}"\n`;
+            });
+            csv += `\n"","TOTAL",${totalSum},"",""\n`;
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            downloadBlob(blob, `report_${date}.csv`);
+            showToast('📥 CSV berhasil didownload!', 'success');
+        }
+
+        async function downloadTXT() {
+            const date = document.getElementById('reportDate').value;
+            const { data: entries, error } = await supabase
+                .from(TABLE_ENTRIES)
+                .select('*')
+                .eq('date', date);
+
+            if (error || entries.length === 0) {
+                showToast('⚠️ Tidak ada data untuk didownload!', 'warning');
+                return;
+            }
+
+            const totalSum = entries.reduce((sum, e) => sum + e.gift_amount, 0);
+            let txt = `REPORT DATA GIFT - ${date}\n`;
+            txt += '='.repeat(50) + '\n\n';
+            entries.forEach((e, i) => {
+                txt += `${i+1}. Username: ${e.username}\n`;
+                txt += `   Total Gift: Rp ${e.gift_amount.toLocaleString()}\n`;
+                txt += `   Recipient: ${e.recipient}\n\n`;
+            });
+            txt += '='.repeat(50) + '\n';
+            txt += `TOTAL KESELURUHAN: Rp ${totalSum.toLocaleString()}\n`;
+            txt += `JUMLAH USER: ${entries.length}\n`;
+
+            const blob = new Blob([txt], { type: 'text/plain' });
+            downloadBlob(blob, `report_${date}.txt`);
+            showToast('📥 TXT berhasil didownload!', 'success');
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== GIFT RANK =====
+        async function renderRank() {
+            const entries = await getEntries();
+            const userTotals = {};
+
+            entries.forEach(entry => {
+                if (!userTotals[entry.username]) userTotals[entry.username] = 0;
+                userTotals[entry.username] += entry.gift_amount;
+            });
+
+            const sorted = Object.entries(userTotals).sort((a, b) => b[1] - a[1]);
+            const podiumContainer = document.getElementById('podiumContainer');
+            const rankList = document.getElementById('rankList');
+
+            if (sorted.length === 0) {
+                podiumContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><p>Belum ada data ranking</p></div>';
+                rankList.innerHTML = '<div class="empty-state"><p>Belum ada data</p></div>';
+                return;
+            }
+
+            const podiumOrder = [];
+            if (sorted.length >= 2) podiumOrder.push({ ...sorted[1], rank: 2 });
+            if (sorted.length >= 1) podiumOrder.push({ ...sorted[0], rank: 1 });
+            if (sorted.length >= 3) podiumOrder.push({ ...sorted[2], rank: 3 });
+
+            const podiumHTML = podiumOrder.map(item => {
+                const rankClass = item.rank === 1 ? 'first' : item.rank === 2 ? 'second' : 'third';
+                const rankIcon = item.rank === 1 ? '👑' : item.rank === 2 ? '🥈' : '🥉';
+                const avatarEmoji = item.rank === 1 ? '🏆' : item.rank === 2 ? '🥈' : '🥉';
+                const crownHTML = item.rank === 1 ? '<div class="crown">👑</div>' : '';
+                return `
+                    <div class="podium-spot ${rankClass}">
+                        <div class="podium-avatar">
+                            ${crownHTML}
+                            ${avatarEmoji}
+                        </div>
+                        <div class="podium-block">
+                            <div style="font-size:20px;">${rankIcon}</div>
+                            <div style="font-size:14px;font-weight:600;margin-top:5px;">${item[0]}</div>
+                            <div style="font-size:13px;margin-top:3px;">Rp ${item[1].toLocaleString()}</div>
+                        </div>
+                        <div class="podium-name">${item[0]}</div>
+                        <div class="podium-total">Rp ${item[1].toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+
+            podiumContainer.innerHTML = podiumHTML;
+
+            rankList.innerHTML = sorted.map((entry, index) => {
+                const rank = index + 1;
+                const rankClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : '';
+                const icon = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                return `
+                    <div class="rank-item ${rankClass}">
+                        <div class="rank-number">${icon}</div>
+                        <div class="rank-name">${entry[0]}</div>
+                        <div class="rank-total">Rp ${entry[1].toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===== 3D CHARTS =====
+        async function renderUser3DChart() {
+            const chartDom = document.getElementById('userChart3D');
+            if (!chartDom || !chartDom.clientWidth) return;
+
+            const startDate = document.getElementById('chartStartDate').value;
+            const endDate = document.getElementById('chartEndDate').value;
+            const { data: entries, error } = await supabase
+                .from(TABLE_ENTRIES)
+                .select('*')
+                .gte('date', startDate)
+                .lte('date', endDate);
+
+            if (error) {
+                console.error('Error fetching entries for chart:', error);
+                return;
+            }
+
+            if (entries.length === 0) {
+                chartDom.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>Tidak ada data pada rentang tanggal ini</p></div>';
+                return;
+            }
+
+            const dates = [...new Set(entries.map(e => e.date))].sort();
+            const users = [...new Set(entries.map(e => e.username))].sort();
+
+            const lineData = [];
+            dates.forEach((date, dateIdx) => {
+                users.forEach((user, userIdx) => {
+                    const total = entries.filter(e => e.date === date && e.username === user)
+                        .reduce((sum, e) => sum + e.gift_amount, 0);
+                    if (total > 0) {
+                        lineData.push([dateIdx, userIdx, total]);
+                    }
+                });
+            });
+
+            if (lineData.length === 0) {
+                chartDom.innerHTML = '<div class="empty-state"><p>Tidak ada data</p></div>';
+                return;
+            }
+
+            const maxVal = Math.max(...lineData.map(d => d[2])) || 1;
+
+            if (typeof echarts === 'undefined') return;
+            const chart = echarts.init(chartDom);
+            const option = {
+                tooltip: {
+                    formatter: function(params) {
+                        const date = dates[params.data[0]];
+                        const user = users[params.data[1]];
+                        return `<strong>${user}</strong><br>Tanggal: ${date}<br>Total Gift: <strong>Rp ${params.data[2].toLocaleString()}</strong>`;
+                    }
+                },
+                visualMap: {
+                    show: false,
+                    dimension: 2,
+                    min: 0,
+                    max: maxVal,
+                    inRange: {
+                        color: ['#00b894', '#00cec9', '#6c5ce7', '#fd79a8', '#fdcb6e', '#ff6b6b']
+                    }
+                },
+                xAxis3D: {
+                    type: 'category',
+                    data: dates,
+                    name: 'Tanggal',
+                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
+                    axisLabel: { color: '#b8b8d0', fontSize: 10 },
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
+                },
+                yAxis3D: {
+                    type: 'category',
+                    data: users,
+                    name: 'User',
+                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
+                    axisLabel: { color: '#b8b8d0', fontSize: 10 },
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
+                },
+                zAxis3D: {
+                    type: 'value',
+                    name: 'Gift',
+                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
+                    axisLabel: { color: '#b8b8d0', fontSize: 9 },
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
+                    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                },
+                grid3D: {
+                    viewControl: {
+                        projection: 'perspective',
+                        autoRotate: true,
+                        autoRotateSpeed: 8,
+                        distance: 180,
+                        alpha: 35,
+                        beta: 25,
+                        damping: 0.8
+                    },
+                    boxWidth: 180,
+                    boxDepth: 80,
+                    boxHeight: 90,
+                    axisPointer: {
+                        show: true,
+                        lineStyle: { color: '#6c5ce7' }
+                    },
+                    light: {
+                        main: {
+                            intensity: 1.2,
+                            shadow: true,
+                            shadowQuality: 'high',
+                            alpha: 50,
+                            beta: 40
+                        },
+                        ambient: {
+                            intensity: 0.4
+                        }
+                    },
+                    environment: 'transparent'
+                },
+                series: [{
+                    type: 'line3D',
+                    data: lineData,
+                    lineStyle: {
+                        width: 3,
+                        color: '#6c5ce7',
+                        opacity: 0.9
+                    },
+                    symbolSize: 8,
+                    symbol: 'circle',
+                    itemStyle: {
+                        color: '#fdcb6e',
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.5)'
+                    },
+                    emphasis: {
+                        lineStyle: {
+                            width: 5,
+                            color: '#fd79a8'
+                        }
+                    }
+                }]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+        }
+
+        async function renderAchievementChart() {
+            const chartDom = document.getElementById('achievementChart');
+            if (!chartDom || !chartDom.clientWidth) return;
+
+            const startDate = document.getElementById('achStartDate').value;
+            const endDate = document.getElementById('achEndDate').value;
+            const { data: entries, error } = await supabase
+                .from(TABLE_ENTRIES)
+                .select('*')
+                .gte('date', startDate)
+                .lte('date', endDate);
+
+            if (error) {
+                console.error('Error fetching entries for achievement chart:', error);
+                return;
+            }
+
+            if (entries.length === 0) {
+                chartDom.innerHTML = '<div class="empty-state"><div class="empty-icon">📈</div><p>Tidak ada data pada rentang tanggal ini</p></div>';
+                document.getElementById('achievementSummary').innerHTML = '';
+                return;
+            }
+
+            const recipients = ['Theo', 'Kevin', 'Daddy'];
+            const dates = [...new Set(entries.map(e => e.date))].sort();
+            const lineData = [];
+
+            dates.forEach((date, dateIdx) => {
+                recipients.forEach((recipient, recIdx) => {
+                    const total = entries.filter(e => e.date === date && e.recipient === recipient)
+                        .reduce((sum, e) => sum + e.gift_amount, 0);
+                    if (total > 0) {
+                        lineData.push([dateIdx, recIdx, total]);
+                    }
+                });
+            });
+
+            if (lineData.length === 0) {
+                chartDom.innerHTML = '<div class="empty-state"><p>Tidak ada data</p></div>';
+                document.getElementById('achievementSummary').innerHTML = '';
+                return;
+            }
+
+            const maxVal = Math.max(...lineData.map(d => d[2])) || 1;
+            const recipientColors = {
+                'Theo': '#6c5ce7',
+                'Kevin': '#00b894',
+                'Daddy': '#fdcb6e'
+            };
+
+            if (typeof echarts === 'undefined') return;
+            const chart = echarts.init(chartDom);
+            const option = {
+                tooltip: {
+                    formatter: function(params) {
+                        const date = dates[params.data[0]];
+                        const recipient = recipients[params.data[1]];
+                        return `<strong>${recipient}</strong><br>Tanggal: ${date}<br>Total Gift: <strong>Rp ${params.data[2].toLocaleString()}</strong>`;
+                    }
+                },
+                visualMap: {
+                    show: false,
+                    dimension: 2,
+                    min: 0,
+                    max: maxVal,
+                    inRange: {
+                        color: ['#6c5ce7', '#00b894', '#fdcb6e', '#ff6b6b']
+                    }
+                },
+                xAxis3D: {
+                    type: 'category',
+                    data: dates,
+                    name: 'Tanggal',
+                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
+                    axisLabel: { color: '#b8b8d0', fontSize: 10 },
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
+                },
+                yAxis3D: {
+                    type: 'category',
+                    data: recipients,
+                    name: 'Penerima',
+                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
+                    axisLabel: { color: '#b8b8d0', fontSize: 11 },
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
+                },
+                zAxis3D: {
+                    type: 'value',
+                    name: 'Total Gift',
+                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
+                    axisLabel: { color: '#b8b8d0', fontSize: 9 },
+                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
+                    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                },
+                grid3D: {
+                    viewControl: {
+                        projection: 'perspective',
+                        autoRotate: true,
+                        autoRotateSpeed: 6,
+                        distance: 170,
+                        alpha: 40,
+                        beta: 20,
+                        damping: 0.8
+                    },
+                    boxWidth: 160,
+                    boxDepth: 70,
+                    boxHeight: 100,
+                    axisPointer: {
+                        show: true,
+                        lineStyle: { color: '#fdcb6e' }
+                    },
+                    light: {
+                        main: {
+                            intensity: 1.3,
+                            shadow: true,
+                            shadowQuality: 'high',
+                            alpha: 45,
+                            beta: 35
+                        },
+                        ambient: {
+                            intensity: 0.5
+                        }
+                    },
+                    environment: 'transparent'
+                },
+                series: [{
+                    type: 'line3D',
+                    data: lineData,
+                    lineStyle: {
+                        width: 3,
+                        color: '#fdcb6e',
+                        opacity: 0.85
+                    },
+                    symbolSize: 10,
+                    symbol: 'diamond',
+                    itemStyle: {
+                        color: function(params) {
+                            const recipient = recipients[params.data[1]];
+                            return recipientColors[recipient] || '#6c5ce7';
+                        },
+                        borderWidth: 2,
+                        borderColor: 'rgba(255,255,255,0.6)'
+                    },
+                    emphasis: {
+                        lineStyle: {
+                            width: 5,
+                            color: '#ff6b6b'
+                        }
+                    }
+                }]
+            };
+
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
+
+            // Summary cards
+            const summaryContainer = document.getElementById('achievementSummary');
+            const summaryHTML = recipients.map(rec => {
+                const total = entries.filter(e => e.recipient === rec).reduce((sum, e) => sum + e.gift_amount,
+                0);
+                const count = entries.filter(e => e.recipient === rec).length;
+                const color = recipientColors[rec];
+                return `
+                    <div style="flex:1;min-width:150px;padding:20px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid ${color}40;text-align:center;">
+                        <div style="font-size:35px;margin-bottom:8px;">${rec === 'Theo' ? '🧑‍💼' : rec === 'Kevin' ? '🧑‍🎤' : '🧑‍🦳'}</div>
+                        <div style="font-weight:700;font-size:16px;color:${color};">${rec}</div>
+                        <div style="font-size:20px;font-weight:800;margin:8px 0;color:var(--accent-gold);">Rp ${total.toLocaleString()}</div>
+                        <div style="font-size:12px;color:var(--text-muted);">${count} entry</div>
+                    </div>
+                `;
+            }).join('');
+            summaryContainer.innerHTML = summaryHTML;
+        }
+
+        // ===== TOAST =====
+        function showToast(message, type) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.classList.add('toast', type);
+            const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+            toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 500);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
