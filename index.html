@@ -3,67 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yadoru Barter Apps</title>
+    <title>Yadoru Barter Apps - Pro Edition</title>
     <!-- Library OCR Tesseract.js & Chart.js -->
     <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
-            --primary-color: #4f46e5; 
-            --primary-hover: #4338ca;
-            --bg-color: #f3f4f6; 
+            --primary-color: #6366f1; 
+            --primary-hover: #4f46e5;
+            --bg-color: #f8fafc; 
             --card-bg: #ffffff;
-            --text-color: #1f2937;
+            --text-color: #0f172a;
+            --muted-color: #64748b;
+            --border-color: #e2e8f0;
             --danger-color: #ef4444;
             --danger-hover: #dc2626;
+            --success-color: #10b981;
         }
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
             background-color: var(--bg-color); 
             color: var(--text-color);
             margin: 0;
             padding: 20px; 
         }
         .container { 
-            max-width: 850px; 
+            max-width: 950px; 
             margin: 0 auto; 
             background: var(--card-bg); 
-            padding: 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 35px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
         }
         h2 {
             margin-top: 0;
             text-align: center;
             color: var(--primary-color);
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
         .nav-tabs { 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             margin-bottom: 25px; 
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 10px;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: 10px;
         }
         .tab-btn { 
             flex: 1;
-            padding: 10px; 
+            padding: 12px; 
             cursor: pointer; 
             border: none; 
-            border-radius: 6px; 
-            background-color: #e5e7eb;
-            color: #4b5563;
+            border-radius: 8px; 
+            background-color: transparent;
+            color: var(--muted-color);
             font-weight: 600;
-            transition: all 0.2s;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+        .tab-btn:hover {
+            color: var(--text-color);
         }
         .tab-btn.active { 
-            background: var(--primary-color); 
-            color: white; 
+            background: var(--card-bg); 
+            color: var(--primary-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .tab-content { 
             display: none; 
+            animation: fadeIn 0.3s ease-in-out;
         }
         .tab-content.active { 
             display: block; 
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .form-group {
             margin-bottom: 20px;
@@ -72,39 +89,78 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
+            font-size: 14px;
         }
         input[type="text"], input[type="number"], input[type="file"], input[type="date"], select {
             width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 16px;
+            padding: 11px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
             box-sizing: border-box;
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        button[type="submit"], .btn-danger {
-            width: 100%;
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        button[type="submit"], .btn-primary, .btn-danger, .btn-secondary {
             border: none;
-            padding: 12px;
-            font-size: 16px;
+            padding: 12px 16px;
+            font-size: 15px;
             font-weight: 600;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
-        button[type="submit"] {
+        button[type="submit"], .btn-primary {
             background-color: var(--primary-color);
             color: white;
+            width: 100%;
         }
-        button[type="submit"]:hover {
+        button[type="submit"]:hover, .btn-primary:hover {
             background-color: var(--primary-hover);
         }
         .btn-danger {
             background-color: var(--danger-color);
             color: white;
-            margin-bottom: 15px;
         }
         .btn-danger:hover {
             background-color: var(--danger-hover);
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+        /* Metric Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card-metric {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .card-metric span {
+            font-size: 12px;
+            color: var(--muted-color);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .card-metric h3 {
+            margin: 5px 0 0 0;
+            font-size: 20px;
+            color: var(--primary-color);
         }
         table { 
             width: 100%; 
@@ -112,60 +168,61 @@
             margin-top: 10px; 
         }
         th, td { 
-            padding: 12px; 
-            border-bottom: 1px solid #e5e7eb; 
+            padding: 14px 12px; 
+            border-bottom: 1px solid var(--border-color); 
             text-align: left; 
             font-size: 14px;
         }
         th {
-            background-color: #f9fafb;
+            background-color: #f8fafc;
             font-weight: 600;
+            color: #475569;
             cursor: pointer;
             user-select: none;
             transition: background-color 0.2s;
         }
         th:hover {
-            background-color: #f3f4f6;
+            background-color: #f1f5f9;
         }
         th span {
             float: right;
-            color: #9ca3af;
+            color: var(--muted-color);
             font-size: 12px;
         }
         .empty-row, .loading { 
             text-align: center; 
-            color: #6b7280; 
+            color: var(--muted-color); 
             font-style: italic; 
+            padding: 30px;
         }
         .grand-total-row {
-            background-color: #e0e7ff !important;
+            background-color: #eef2ff !important;
             font-weight: bold;
         }
-        .report-controls {
+        .report-controls, .chart-controls {
             display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            align-items: center;
-        }
-        .chart-controls {
-            display: flex;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 20px;
             background: #f8fafc;
             padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Yadoru Apps</h2>
+        <h2>Yadoru Barter Apps</h2>
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('input')">Input & Scan</button>
             <button class="tab-btn" onclick="switchTab('report')">Report List & Waktu</button>
@@ -174,10 +231,12 @@
         
         <!-- Tab 1: Input & Scan Screenshot -->
         <div id="inputTab" class="tab-content active">
-            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 25px;">
-                <label for="screenshotInput" style="color: var(--primary-color); cursor: pointer;">📷 Upload Screenshot Riwayat Gift (Auto-Scan)</label>
-                <input type="file" id="screenshotInput" accept="image/*" style="margin-top: 8px;">
-                <div id="loadingText" class="loading" style="display:none;">Sedang membaca teks dari gambar... Harap tunggu sebentar.</div>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 10px; border: 2px dashed var(--border-color); margin-bottom: 25px; text-align: center;">
+                <label for="screenshotInput" style="color: var(--primary-color); cursor: pointer; font-size: 15px; font-weight: 700;">📷 Upload Screenshot Riwayat Gift (Auto-Scan OCR)</label>
+                <p style="margin: 5px 0 12px 0; font-size: 13px; color: var(--muted-color);">Pilih gambar screenshot untuk membaca data secara otomatis.</p>
+                <input type="file" id="screenshotInput" accept="image/*" style="display: none;">
+                <button type="button" class="btn-secondary" onclick="document.getElementById('screenshotInput').click()" style="width: auto; padding: 8px 16px; font-size: 14px;">Pilih Berkas Gambar</button>
+                <div id="loadingText" class="loading" style="display:none; margin-top: 10px;">Sedang membaca teks dari gambar... Harap tunggu sebentar.</div>
             </div>
 
             <form id="giftForm">
@@ -198,24 +257,44 @@
             </form>
         </div>
 
-        <!-- Tab 2: Report List dengan Waktu Input, Filter & Sort -->
+        <!-- Tab 2: Report List dengan Filter Tanggal, Nama, Sort, & Auto Numbering -->
         <div id="reportTab" class="tab-content">
-            <div class="report-controls">
-                <div style="flex: 2;">
-                    <input type="text" id="searchNama" placeholder="Cari nama subject..." onkeyup="renderTable()">
+            <!-- Ringkasan Statistik -->
+            <div class="summary-cards">
+                <div class="card-metric">
+                    <span>Total Keseluruhan Gift</span>
+                    <h3 id="statTotalGift">0</h3>
                 </div>
-                <div style="flex: 2;">
-                    <select id="sortSelect" onchange="renderTable()">
-                        <option value="name_asc">Urutkan: Nama (A-Z)</option>
-                        <option value="name_desc">Urutkan: Nama (Z-A)</option>
-                        <option value="total_desc">Urutkan: Total Gift (Tertinggi)</option>
-                        <option value="total_asc">Urutkan: Total Gift (Terendah)</option>
-                        <option value="time_desc">Urutkan: Waktu (Terbaru)</option>
-                        <option value="time_asc">Urutkan: Waktu (Terlama)</option>
-                    </select>
+                <div class="card-metric">
+                    <span>Jumlah Subject Aktif</span>
+                    <h3 id="statTotalSubject">0</h3>
                 </div>
             </div>
-            <button class="btn-danger" onclick="resetData()">Reset Semua Data</button>
+
+            <div class="report-controls">
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="filterDate">Filter Tanggal:</label>
+                    <input type="date" id="filterDate" onchange="renderTable()">
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="searchNama">Cari Subject:</label>
+                    <input type="text" id="searchNama" placeholder="Ketik nama..." onkeyup="renderTable()">
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="sortSelect">Urutkan:</label>
+                    <select id="sortSelect" onchange="renderTable()">
+                        <option value="name_asc">Nama (A-Z)</option>
+                        <option value="name_desc">Nama (Z-A)</option>
+                        <option value="total_desc">Total Gift (Tertinggi)</option>
+                        <option value="total_asc">Total Gift (Terendah)</option>
+                        <option value="time_desc">Waktu (Terbaru)</option>
+                        <option value="time_asc">Waktu (Terlama)</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="button" class="btn-secondary" onclick="resetDateFilter()" style="padding: 11px 14px; font-size: 14px;">Semua Tanggal</button>
+                </div>
+            </div>
 
             <table id="reportTable">
                 <thead>
@@ -230,17 +309,22 @@
                     <tr><td colspan="4" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>
                 </tbody>
             </table>
+
+            <div class="action-bar">
+                <button type="button" class="btn-secondary" onclick="exportToCSV()" style="width: auto;">📥 Ekspor ke CSV</button>
+                <button type="button" class="btn-danger" onclick="resetData()" style="width: auto;">🗑️ Reset Semua Data</button>
+            </div>
         </div>
 
         <!-- Tab 3: Grafik Mingguan Per User (Bisa Setting Tanggal) -->
         <div id="grafikTab" class="tab-content">
             <div class="chart-controls">
                 <div style="flex: 1;">
-                    <label for="startDate" style="font-size: 13px; margin-bottom: 4px;">Mulai Tanggal:</label>
+                    <label for="startDate">Mulai Tanggal:</label>
                     <input type="date" id="startDate" onchange="updateCharts()">
                 </div>
                 <div style="flex: 1;">
-                    <label for="endDate" style="font-size: 13px; margin-bottom: 4px;">Sampai Tanggal:</label>
+                    <label for="endDate">Sampai Tanggal:</label>
                     <input type="date" id="endDate" onchange="updateCharts()">
                 </div>
             </div>
@@ -251,7 +335,6 @@
     </div>
 
     <script>
-        // Inisialisasi tanggal hari ini pada form saat halaman pertama kali dimuat
         window.addEventListener('DOMContentLoaded', () => {
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('inputDate').value = todayStr;
@@ -333,7 +416,6 @@
             }
         }
 
-        // Handle Submit Form dengan Tanggal Custom & Jam Otomatis
         document.getElementById('giftForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const selectedDate = document.getElementById('inputDate').value;
@@ -361,7 +443,6 @@
             alert(`Data Berhasil Disimpan untuk tanggal ${selectedDate}!`);
         });
 
-        // Toggle Sort dari Klik Header Kolom
         function toggleSortColumn(columnType) {
             const sortSelect = document.getElementById('sortSelect');
             if (columnType === 'name') {
@@ -374,14 +455,18 @@
             renderTable();
         }
 
-        // Render Tabel Report dengan Fitur Sort, Filter, dan Auto Numbering
+        function resetDateFilter() {
+            document.getElementById('filterDate').value = '';
+            renderTable();
+        }
+
         function renderTable() {
             const tableBody = document.getElementById('giftTableBody');
             tableBody.innerHTML = '';
             const keyword = document.getElementById('searchNama').value.toLowerCase();
+            const filterDate = document.getElementById('filterDate').value;
             const sortBy = document.getElementById('sortSelect').value;
 
-            // Update indikator ikon sort di header tabel
             document.getElementById('sort-icon-name').innerText = sortBy === 'name_asc' ? '▲' : (sortBy === 'name_desc' ? '▼' : '↕');
             document.getElementById('sort-icon-total').innerText = sortBy === 'total_desc' ? '▼' : (sortBy === 'total_asc' ? '▲' : '↕');
             document.getElementById('sort-icon-time').innerText = sortBy === 'time_desc' ? '▼' : (sortBy === 'time_asc' ? '▲' : '↕');
@@ -389,15 +474,19 @@
             const aggregated = {};
             let grandTotal = 0;
 
-            Object.keys(giftData).forEach(date => {
-                const users = giftData[date];
-                for(let name in users) {
-                    if(!aggregated[name]) {
-                        aggregated[name] = { total: 0, lastTime: users[name].lastTime };
-                    }
-                    aggregated[name].total += users[name].total;
-                    if(users[name].lastTime > aggregated[name].lastTime) {
-                        aggregated[name].lastTime = users[name].lastTime;
+            const targetDates = filterDate ? [filterDate] : Object.keys(giftData);
+
+            targetDates.forEach(date => {
+                if(giftData[date]) {
+                    const users = giftData[date];
+                    for(let name in users) {
+                        if(!aggregated[name]) {
+                            aggregated[name] = { total: 0, lastTime: users[name].lastTime };
+                        }
+                        aggregated[name].total += users[name].total;
+                        if(users[name].lastTime > aggregated[name].lastTime) {
+                            aggregated[name].lastTime = users[name].lastTime;
+                        }
                     }
                 }
             });
@@ -405,34 +494,29 @@
             const allNames = Object.keys(aggregated);
             allNames.forEach(name => grandTotal += aggregated[name].total);
 
-            // Filter berdasarkan Nama Subject
+            // Update Statistik Cards
+            document.getElementById('statTotalGift').innerText = grandTotal.toLocaleString();
+            document.getElementById('statTotalSubject').innerText = allNames.length;
+
             let filteredNames = allNames.filter(name => name.toLowerCase().includes(keyword));
 
-            // Proses Sorting / Pengurutan
             filteredNames.sort((a, b) => {
-                if (sortBy === 'name_asc') {
-                    return a.localeCompare(b);
-                } else if (sortBy === 'name_desc') {
-                    return b.localeCompare(a);
-                } else if (sortBy === 'total_desc') {
-                    return aggregated[b].total - aggregated[a].total;
-                } else if (sortBy === 'total_asc') {
-                    return aggregated[a].total - aggregated[b].total;
-                } else if (sortBy === 'time_desc') {
-                    return aggregated[b].lastTime.localeCompare(aggregated[a].lastTime);
-                } else if (sortBy === 'time_asc') {
-                    return aggregated[a].lastTime.localeCompare(aggregated[b].lastTime);
-                }
+                if (sortBy === 'name_asc') return a.localeCompare(b);
+                if (sortBy === 'name_desc') return b.localeCompare(a);
+                if (sortBy === 'total_desc') return aggregated[b].total - aggregated[a].total;
+                if (sortBy === 'total_asc') return aggregated[a].total - aggregated[b].total;
+                if (sortBy === 'time_desc') return aggregated[b].lastTime.localeCompare(aggregated[a].lastTime);
+                if (sortBy === 'time_asc') return aggregated[a].lastTime.localeCompare(aggregated[b].lastTime);
                 return 0;
             });
 
-            if (allNames.length === 0) {
+            if (Object.keys(giftData).length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="4" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>`;
                 return;
             }
 
             if (filteredNames.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="empty-row">Tidak ada data subject yang ditemukan.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="4" class="empty-row">Tidak ada data subject yang ditemukan untuk filter tersebut.</td></tr>`;
                 return;
             }
 
@@ -441,8 +525,8 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${no++}</td>
-                    <td>${escapeHtml(name)}</td>
-                    <td><small style="color: #6b7280;">📅 ${aggregated[name].lastTime}</small></td>
+                    <td><b>${escapeHtml(name)}</b></td>
+                    <td><small style="color: var(--muted-color);">📅 ${aggregated[name].lastTime}</small></td>
                     <td><strong style="color:var(--primary-color);">${aggregated[name].total.toLocaleString()}</strong></td>
                 `;
                 tableBody.appendChild(row);
@@ -457,7 +541,32 @@
             tableBody.appendChild(totalRow);
         }
 
-        // Inisialisasi default tanggal filter grafik (7 hari terakhir)
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,No,Nama Subject,Waktu Input Terakhir,Total Gift\n";
+            let no = 1;
+            
+            const aggregated = {};
+            Object.keys(giftData).forEach(date => {
+                const users = giftData[date];
+                for(let name in users) {
+                    if(!aggregated[name]) aggregated[name] = { total: 0, lastTime: users[name].lastTime };
+                    aggregated[name].total += users[name].total;
+                }
+            });
+
+            for(let name in aggregated) {
+                csvContent += `${no++},"${name}","${aggregated[name].lastTime}",${aggregated[name].total}\n`;
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "yadoru_gift_report.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function initDateFilter() {
             const endDateInput = document.getElementById('endDate');
             const startDateInput = document.getElementById('startDate');
@@ -472,11 +581,9 @@
             }
         }
 
-        // Render Line Chart Berdasarkan Per User dengan Rentang Tanggal Dinamis
         let myChart;
         function updateCharts() {
             const ctx = document.getElementById('giftChart').getContext('2d');
-            
             const startStr = document.getElementById('startDate').value;
             const endStr = document.getElementById('endDate').value;
             
@@ -498,7 +605,7 @@
                 }
             });
 
-            const colorPalette = ['#4f46e5', '#ef4444', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
+            const colorPalette = ['#6366f1', '#ef4444', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
             let colorIdx = 0;
 
             const datasets = [];
@@ -520,23 +627,18 @@
                     backgroundColor: color,
                     borderWidth: 2,
                     fill: false,
-                    tension: 0.2
+                    tension: 0.3
                 });
             });
 
             if(myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'line',
-                data: { 
-                    labels: labels, 
-                    datasets: datasets 
-                },
+                data: { labels: labels, datasets: datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
