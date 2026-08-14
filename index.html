@@ -120,6 +120,17 @@
         th {
             background-color: #f9fafb;
             font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        th:hover {
+            background-color: #f3f4f6;
+        }
+        th span {
+            float: right;
+            color: #9ca3af;
+            font-size: 12px;
         }
         .empty-row, .loading { 
             text-align: center; 
@@ -130,7 +141,17 @@
             background-color: #e0e7ff !important;
             font-weight: bold;
         }
-        .chart-controls, .report-controls {
+        .report-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+        }
+        .chart-controls {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
@@ -190,6 +211,7 @@
                         <option value="total_desc">Urutkan: Total Gift (Tertinggi)</option>
                         <option value="total_asc">Urutkan: Total Gift (Terendah)</option>
                         <option value="time_desc">Urutkan: Waktu (Terbaru)</option>
+                        <option value="time_asc">Urutkan: Waktu (Terlama)</option>
                     </select>
                 </div>
             </div>
@@ -198,10 +220,10 @@
             <table id="reportTable">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Nama Subject</th>
-                        <th>Waktu Input Terakhir</th>
-                        <th>Total Gift</th>
+                        <th style="width: 50px;">No</th>
+                        <th onclick="toggleSortColumn('name')">Nama Subject <span id="sort-icon-name">↕</span></th>
+                        <th onclick="toggleSortColumn('time')">Waktu Input Terakhir <span id="sort-icon-time">↕</span></th>
+                        <th onclick="toggleSortColumn('total')">Total Gift <span id="sort-icon-total">↕</span></th>
                     </tr>
                 </thead>
                 <tbody id="giftTableBody">
@@ -339,12 +361,30 @@
             alert(`Data Berhasil Disimpan untuk tanggal ${selectedDate}!`);
         });
 
+        // Toggle Sort dari Klik Header Kolom
+        function toggleSortColumn(columnType) {
+            const sortSelect = document.getElementById('sortSelect');
+            if (columnType === 'name') {
+                sortSelect.value = (sortSelect.value === 'name_asc') ? 'name_desc' : 'name_asc';
+            } else if (columnType === 'total') {
+                sortSelect.value = (sortSelect.value === 'total_desc') ? 'total_asc' : 'total_desc';
+            } else if (columnType === 'time') {
+                sortSelect.value = (sortSelect.value === 'time_desc') ? 'time_asc' : 'time_desc';
+            }
+            renderTable();
+        }
+
         // Render Tabel Report dengan Fitur Sort, Filter, dan Auto Numbering
         function renderTable() {
             const tableBody = document.getElementById('giftTableBody');
             tableBody.innerHTML = '';
             const keyword = document.getElementById('searchNama').value.toLowerCase();
             const sortBy = document.getElementById('sortSelect').value;
+
+            // Update indikator ikon sort di header tabel
+            document.getElementById('sort-icon-name').innerText = sortBy === 'name_asc' ? '▲' : (sortBy === 'name_desc' ? '▼' : '↕');
+            document.getElementById('sort-icon-total').innerText = sortBy === 'total_desc' ? '▼' : (sortBy === 'total_asc' ? '▲' : '↕');
+            document.getElementById('sort-icon-time').innerText = sortBy === 'time_desc' ? '▼' : (sortBy === 'time_asc' ? '▲' : '↕');
 
             const aggregated = {};
             let grandTotal = 0;
@@ -365,7 +405,7 @@
             const allNames = Object.keys(aggregated);
             allNames.forEach(name => grandTotal += aggregated[name].total);
 
-            // Filter berdasarkan Nama
+            // Filter berdasarkan Nama Subject
             let filteredNames = allNames.filter(name => name.toLowerCase().includes(keyword));
 
             // Proses Sorting / Pengurutan
@@ -380,6 +420,8 @@
                     return aggregated[a].total - aggregated[b].total;
                 } else if (sortBy === 'time_desc') {
                     return aggregated[b].lastTime.localeCompare(aggregated[a].lastTime);
+                } else if (sortBy === 'time_asc') {
+                    return aggregated[a].lastTime.localeCompare(aggregated[b].lastTime);
                 }
                 return 0;
             });
