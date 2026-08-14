@@ -3,1360 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GiftMaster Pro - Entry & Achievement</title>
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- ECharts & ECharts GL -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Sistem Manajemen Gift Pro</title>
+    <!-- Library OCR Tesseract.js & Chart.js -->
+    <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg-primary: #0a0a1a;
-            --bg-secondary: #111128;
-            --bg-card: rgba(255, 255, 255, 0.04);
-            --bg-glass: rgba(255, 255, 255, 0.06);
-            --border-glass: rgba(255, 255, 255, 0.1);
-            --text-primary: #ffffff;
-            --text-secondary: #b8b8d0;
-            --text-muted: #7a7a9a;
-            --accent-purple: #6c5ce7;
-            --accent-purple-light: #a29bfe;
-            --accent-pink: #fd79a8;
-            --accent-gold: #fdcb6e;
-            --accent-green: #00b894;
-            --accent-red: #ff6b6b;
-            --accent-cyan: #00cec9;
-            --gradient-main: linear-gradient(135deg, #6c5ce7, #fd79a8, #fdcb6e);
-            --gradient-hero: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
-            --shadow-glow: 0 0 40px rgba(108, 92, 231, 0.3);
-            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
-            --radius: 16px;
-            --radius-sm: 10px;
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        :root { 
+            --primary-color: #4f46e5; 
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6; 
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-        .particles-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
-        .particle { position: absolute; width: 3px; height: 3px; background: var(--accent-purple-light); border-radius: 50%; animation: float-particle 15s infinite linear; opacity: 0; }
-        @keyframes float-particle { 0% { opacity: 0; transform: translateY(100vh) translateX(0) scale(0); } 10% { opacity: 0.8; } 90% { opacity: 0.8; } 100% { opacity: 0; transform: translateY(-10vh) translateX(50px) scale(1); } }
-        .login-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--gradient-hero); z-index: 1000; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .login-page.hidden { opacity: 0; pointer-events: none; transform: scale(1.1); }
-        .login-card { background: var(--bg-glass); backdrop-filter: blur(20px); border: 1px solid var(--border-glass); border-radius: 24px; padding: 50px 40px; width: 420px; max-width: 90vw; text-align: center; box-shadow: var(--shadow-card), var(--shadow-glow); animation: slide-up-enter 0.8s ease-out, glow-pulse 3s ease-in-out infinite; position: relative; overflow: hidden; }
-        .login-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(108, 92, 231, 0.1), transparent, rgba(253, 121, 168, 0.1), transparent); animation: rotate-border 8s linear infinite; z-index: -1; }
-        @keyframes rotate-border { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes glow-pulse { 0%, 100% { box-shadow: var(--shadow-card), 0 0 30px rgba(108, 92, 231, 0.2); } 50% { box-shadow: var(--shadow-card), 0 0 60px rgba(108, 92, 231, 0.5); } }
-        @keyframes slide-up-enter { from { opacity: 0; transform: translateY(50px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .login-logo { font-size: 60px; margin-bottom: 10px; animation: bounce-logo 2s ease-in-out infinite; }
-        @keyframes bounce-logo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .login-title { font-size: 28px; font-weight: 800; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; letter-spacing: 1px; }
-        .login-subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 30px; font-weight: 300; }
-        .login-btn { width: 100%; padding: 15px; background: var(--gradient-main); border: none; border-radius: var(--radius-sm); color: white; font-size: 16px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: var(--transition); letter-spacing: 2px; text-transform: uppercase; position: relative; overflow: hidden; }
-        .login-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(108, 92, 231, 0.5); }
-        .login-btn:active { transform: translateY(0); }
-        .login-btn .btn-shine { position: absolute; top: -50%; left: -60%; width: 40%; height: 200%; background: rgba(255, 255, 255, 0.3); transform: rotate(25deg); transition: all 0.6s ease; pointer-events: none; }
-        .login-btn:hover .btn-shine { left: 120%; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gradient-hero); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.6s ease; }
-        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
-        .loader-spinner { width: 80px; height: 80px; border-radius: 50%; border: 4px solid rgba(255, 255, 255, 0.1); border-top-color: var(--accent-purple); border-right-color: var(--accent-pink); border-bottom-color: var(--accent-gold); animation: spin-loader 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; margin-bottom: 30px; }
-        @keyframes spin-loader { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loader-text { font-size: 24px; font-weight: 700; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 3px; animation: text-pulse 1.5s ease-in-out infinite; }
-        @keyframes text-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .loader-progress { width: 250px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin-top: 20px; overflow: hidden; }
-        .loader-progress-bar { height: 100%; background: var(--gradient-main); border-radius: 10px; animation: progress-loading 2s ease-in-out infinite; transition: width 0.3s ease; }
-        @keyframes progress-loading { 0% { width: 0%; } 50% { width: 80%; } 100% { width: 100%; } }
-        .logout-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gradient-hero); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.8s ease; opacity: 0; pointer-events: none; }
-        .logout-overlay.active { opacity: 1; pointer-events: all; }
-        .logout-icon { font-size: 80px; margin-bottom: 20px; animation: logout-bounce 1s ease-in-out infinite; }
-        @keyframes logout-bounce { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-20px) rotate(10deg); } }
-        .logout-text { font-size: 28px; font-weight: 700; color: white; letter-spacing: 4px; animation: text-pulse 1s ease-in-out infinite; }
-        .main-app { display: flex; min-height: 100vh; position: relative; z-index: 1; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
-        .main-app.visible { opacity: 1; pointer-events: all; }
-        .sidebar { width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border-glass); padding: 20px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; top: 0; left: 0; z-index: 100; transition: all 0.4s ease; }
-        .sidebar-logo { text-align: center; padding: 0 20px 20px; border-bottom: 1px solid var(--border-glass); margin-bottom: 20px; }
-        .sidebar-logo span { font-size: 28px; }
-        .sidebar-logo h2 { font-size: 18px; font-weight: 800; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
-        .sidebar-logo p { font-size: 11px; color: var(--text-muted); font-weight: 300; }
-        .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); color: var(--text-secondary); text-decoration: none; position: relative; border: none; background: transparent; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500; width: 100%; text-align: left; }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); transform: translateX(5px); }
-        .nav-item.active { background: rgba(108, 92, 231, 0.15); color: var(--accent-purple-light); border-left: 3px solid var(--accent-purple); }
-        .nav-item .nav-icon { font-size: 20px; width: 30px; text-align: center; }
-        .nav-item .nav-label { font-weight: 500; }
-        .nav-item .nav-badge { margin-left: auto; background: var(--accent-purple); color: white; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
-        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border-glass); }
-        .logout-btn { width: 100%; padding: 12px; background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); border-radius: var(--radius-sm); color: var(--accent-red); font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .logout-btn:hover { background: rgba(255, 107, 107, 0.2); transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255, 107, 107, 0.2); }
-        .main-content { flex: 1; margin-left: 260px; padding: 30px 35px; min-height: 100vh; transition: all 0.3s ease; }
-        .page-section { display: none; animation: page-fade-in 0.5s ease-out; }
-        .page-section.active { display: block; }
-        @keyframes page-fade-in { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .page-header { margin-bottom: 30px; }
-        .page-header h1 { font-size: 28px; font-weight: 800; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
-        .page-header p { color: var(--text-secondary); font-size: 14px; font-weight: 300; }
-        .card { background: var(--bg-glass); backdrop-filter: blur(15px); border: 1px solid var(--border-glass); border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow-card); transition: var(--transition); }
-        .card:hover { box-shadow: var(--shadow-card), 0 0 30px rgba(108, 92, 231, 0.15); }
-        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; letter-spacing: 0.5px; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 14px; font-family: 'Poppins', sans-serif; transition: var(--transition); outline: none; }
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent-purple); box-shadow: 0 0 15px rgba(108, 92, 231, 0.25); background: rgba(255, 255, 255, 0.08); }
-        .form-group textarea { resize: vertical; min-height: 80px; }
-        .form-group select option { background: var(--bg-secondary); color: var(--text-primary); }
-        .btn { padding: 12px 24px; border-radius: var(--radius-sm); border: none; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition); letter-spacing: 0.5px; position: relative; overflow: hidden; }
-        .btn-primary { background: var(--gradient-main); color: white; }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); }
-        .btn-secondary { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); border: 1px solid var(--border-glass); }
-        .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
-        .btn-success { background: linear-gradient(135deg, #00b894, #00cec9); color: white; }
-        .btn-success:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4); }
-        .btn-danger { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); color: white; }
-        .btn-danger:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
-        .btn-sm { padding: 8px 16px; font-size: 12px; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-        .profile-container { display: grid; grid-template-columns: 300px 1fr; gap: 25px; }
-        .profile-photo-card { text-align: center; padding: 30px 20px; }
-        .profile-photo-wrapper { position: relative; width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 15px; overflow: hidden; border: 4px solid var(--accent-purple); box-shadow: 0 0 30px rgba(108, 92, 231, 0.4); cursor: pointer; transition: var(--transition); }
-        .profile-photo-wrapper:hover { box-shadow: 0 0 50px rgba(108, 92, 231, 0.6); transform: scale(1.05); }
-        .profile-photo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-photo-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 60px; background: var(--bg-secondary); color: var(--text-muted); }
-        .profile-photo-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.6); padding: 8px; font-size: 12px; color: white; text-align: center; opacity: 0; transition: var(--transition); }
-        .profile-photo-wrapper:hover .profile-photo-overlay { opacity: 1; }
-        .profile-photo-input { display: none; }
-        .profile-name-display { font-size: 20px; font-weight: 700; margin-bottom: 5px; }
-        .profile-role { color: var(--text-secondary); font-size: 13px; }
-        .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-        .quick-date-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-        .quick-date-btn { padding: 6px 14px; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-glass); border-radius: 20px; color: var(--text-secondary); font-size: 12px; cursor: pointer; transition: var(--transition); font-family: 'Poppins', sans-serif; }
-        .quick-date-btn:hover { background: rgba(108, 92, 231, 0.2); color: var(--accent-purple-light); border-color: var(--accent-purple); }
-        .check-result { padding: 15px; border-radius: var(--radius-sm); margin-top: 15px; display: none; animation: slide-down 0.4s ease-out; }
-        .check-result.found { display: block; background: rgba(0, 184, 148, 0.1); border: 1px solid rgba(0, 184, 148, 0.3); }
-        .check-result.not-found { display: block; background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); }
-        @keyframes slide-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .report-table th { padding: 12px 15px; text-align: left; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); border-bottom: 2px solid var(--border-glass); }
-        .report-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-secondary); }
-        .report-table tr:hover td { background: rgba(255, 255, 255, 0.03); }
-        .total-highlight { font-size: 32px; font-weight: 800; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .chart-container { width: 100%; height: 400px; margin-top: 15px; border-radius: var(--radius-sm); overflow: hidden; }
-        .podium-container { display: flex; justify-content: center; align-items: flex-end; gap: 20px; margin: 30px 0; flex-wrap: wrap; }
-        .podium-spot { text-align: center; display: flex; flex-direction: column; align-items: center; animation: podium-appear 0.8s ease-out; transition: var(--transition); }
-        .podium-spot:hover { transform: translateY(-10px); }
-        .podium-spot.first { animation-delay: 0.2s; }
-        .podium-spot.second { animation-delay: 0.4s; }
-        .podium-spot.third { animation-delay: 0.6s; }
-        @keyframes podium-appear { from { opacity: 0; transform: translateY(50px) scale(0.7); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .podium-avatar { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin-bottom: 10px; border: 3px solid; background: var(--bg-secondary); position: relative; }
-        .podium-avatar .crown { position: absolute; top: -25px; font-size: 30px; animation: crown-float 2s ease-in-out infinite; }
-        @keyframes crown-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        .podium-spot.first .podium-avatar { width: 100px; height: 100px; font-size: 45px; border-color: #fdcb6e; box-shadow: 0 0 40px rgba(253, 203, 110, 0.5); }
-        .podium-spot.second .podium-avatar { border-color: #b2bec3; box-shadow: 0 0 30px rgba(178, 190, 195, 0.4); width: 90px; height: 90px; font-size: 40px; }
-        .podium-spot.third .podium-avatar { border-color: #e17055; box-shadow: 0 0 30px rgba(225, 112, 85, 0.4); }
-        .podium-block { width: 100px; border-radius: 10px 10px 0 0; padding: 20px 10px; color: white; font-weight: 700; }
-        .podium-spot.first .podium-block { width: 130px; height: 120px; background: linear-gradient(135deg, #fdcb6e, #f39c12); }
-        .podium-spot.second .podium-block { width: 110px; height: 90px; background: linear-gradient(135deg, #b2bec3, #636e72); }
-        .podium-spot.third .podium-block { width: 100px; height: 70px; background: linear-gradient(135deg, #e17055, #d63031); }
-        .podium-name { font-size: 16px; font-weight: 700; margin-top: 8px; }
-        .podium-total { font-size: 14px; color: var(--accent-gold); font-weight: 600; }
-        .rank-list { margin-top: 20px; }
-        .rank-item { display: flex; align-items: center; gap: 15px; padding: 12px 15px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: var(--transition); cursor: pointer; }
-        .rank-item:hover { background: rgba(255, 255, 255, 0.06); transform: translateX(5px); }
-        .rank-number { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; background: var(--bg-glass); border: 1px solid var(--border-glass); }
-        .rank-item.top-1 .rank-number { background: #fdcb6e; color: #000; font-size: 16px; }
-        .rank-item.top-2 .rank-number { background: #b2bec3; color: #000; }
-        .rank-item.top-3 .rank-number { background: #e17055; color: #fff; }
-        .rank-name { font-weight: 600; flex: 1; }
-        .rank-total { font-weight: 700; color: var(--accent-gold); font-size: 16px; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 5000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: all 0.4s ease; }
-        .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal-content { background: var(--bg-secondary); border: 1px solid var(--border-glass); border-radius: 20px; padding: 30px; width: 500px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); transform: translateY(50px) scale(0.9); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); text-align: center; }
-        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
-        .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .modal-subtitle { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
-        .recipient-options { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
-        .recipient-card { padding: 20px 25px; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--border-glass); border-radius: var(--radius); cursor: pointer; transition: var(--transition); text-align: center; min-width: 120px; }
-        .recipient-card:hover { border-color: var(--accent-purple); box-shadow: 0 0 30px rgba(108, 92, 231, 0.3); transform: translateY(-5px); background: rgba(108, 92, 231, 0.1); }
-        .recipient-card .recipient-avatar { font-size: 40px; margin-bottom: 10px; }
-        .recipient-card .recipient-name { font-weight: 700; font-size: 16px; color: var(--text-primary); }
-        .recipient-card .recipient-desc { font-size: 11px; color: var(--text-muted); }
-        .toast { position: fixed; top: 30px; right: 30px; padding: 15px 25px; border-radius: var(--radius-sm); color: white; font-weight: 600; font-size: 14px; z-index: 9999; transform: translateX(120%); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
-        .toast.show { transform: translateX(0); }
-        .toast.success { background: linear-gradient(135deg, #00b894, #00cec9); }
-        .toast.error { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); }
-        .toast.info { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
-        .toast.warning { background: linear-gradient(135deg, #fdcb6e, #f39c12); color: #000; }
-        @media (max-width: 768px) { .sidebar { width: 70px; padding: 15px 0; } .sidebar-logo h2, .sidebar-logo p, .nav-label, .nav-badge, .logout-btn span { display: none; } .nav-item { justify-content: center; padding: 12px; } .nav-item .nav-icon { font-size: 22px; width: auto; } .sidebar-footer { padding: 10px; } .logout-btn { justify-content: center; padding: 10px; } .main-content { margin-left: 70px; padding: 20px; } .profile-container { grid-template-columns: 1fr; } .entry-grid { grid-template-columns: 1fr; } .login-card { padding: 30px 20px; } .podium-block { width: 70px; } .podium-spot.first .podium-block { width: 90px; } .podium-spot.second .podium-block { width: 80px; } .chart-container { height: 300px; } }
-        .badge-chip { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
-        .badge-theo { background: rgba(108, 92, 231, 0.2); color: #a29bfe; }
-        .badge-kevin { background: rgba(0, 184, 148, 0.2); color: #55efc4; }
-        .badge-daddy { background: rgba(253, 203, 110, 0.2); color: #fdcb6e; }
-        .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-        .empty-state .empty-icon { font-size: 50px; margin-bottom: 15px; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 750px; 
+            margin: 0 auto; 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: var(--primary-color);
+        }
+        .nav-tabs { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 25px; 
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .tab-btn { 
+            flex: 1;
+            padding: 10px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 6px; 
+            background-color: #e5e7eb;
+            color: #4b5563;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab-btn.active { 
+            background: var(--primary-color); 
+            color: white; 
+        }
+        .tab-content { 
+            display: none; 
+        }
+        .tab-content.active { 
+            display: block; 
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input[type="text"], input[type="number"], input[type="file"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button[type="submit"], .btn-danger {
+            width: 100%;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button[type="submit"] {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        button[type="submit"]:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            margin-bottom: 15px;
+        }
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+        }
+        th, td { 
+            padding: 12px; 
+            border-bottom: 1px solid #e5e7eb; 
+            text-align: left; 
+        }
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        .empty-row, .loading { 
+            text-align: center; 
+            color: #6b7280; 
+            font-style: italic; 
+        }
+        .grand-total-row {
+            background-color: #e0e7ff !important;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>Manajemen Gift Pro</h2>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('input')">Input & Scan</button>
+            <button class="tab-btn" onclick="switchTab('report')">Report List</button>
+            <button class="tab-btn" onclick="switchTab('grafik')">Grafik Mingguan</button>
+        </div>
+        
+        <!-- Tab 1: Input & Scan Screenshot -->
+        <div id="inputTab" class="tab-content active">
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 25px;">
+                <label for="screenshotInput" style="color: var(--primary-color); cursor: pointer;">📷 Upload Screenshot Riwayat Gift (Auto-Scan)</label>
+                <input type="file" id="screenshotInput" accept="image/*" style="margin-top: 8px;">
+                <div id="loadingText" class="loading" style="display:none;">Sedang membaca teks dari gambar... Harap tunggu sebentar.</div>
+            </div>
 
-    <!-- PARTICLES BACKGROUND -->
-    <div class="particles-container" id="particlesContainer"></div>
+            <form id="giftForm">
+                <div class="form-group">
+                    <label for="nama">Nama Subject</label>
+                    <input type="text" id="nama" placeholder="Contoh: Zaki" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="jumlah">Jumlah Gift</label>
+                    <input type="number" id="jumlah" placeholder="Contoh: 9000" min="1" required>
+                </div>
+                <button type="submit">Simpan & Akumulasi Data</button>
+            </form>
+        </div>
 
-    <!-- LOGIN PAGE -->
-    <div class="login-page" id="loginPage">
-        <div class="login-card">
-            <div class="login-logo">🎁</div>
-            <h1 class="login-title">GiftMaster Pro</h1>
-            <p class="login-subtitle">Data Entry & Achievement Tracker</p>
-            <button type="button" class="login-btn" id="enterBtn">
-                <span class="btn-shine"></span>
-                Masuk
-            </button>
+        <!-- Tab 2: Report List -->
+        <div id="reportTab" class="tab-content">
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="searchNama" placeholder="Cari nama subject..." onkeyup="renderTable()">
+            </div>
+            <button class="btn-danger" onclick="resetData()">Reset Semua Data</button>
+
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Subject</th>
+                        <th>Total Gift</th>
+                    </tr>
+                </thead>
+                <tbody id="giftTableBody">
+                    <tr><td colspan="3" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tab 3: Grafik Mingguan -->
+        <div id="grafikTab" class="tab-content">
+            <canvas id="giftChart"></canvas>
         </div>
     </div>
-
-    <!-- LOADING OVERLAY -->
-    <div class="loading-overlay hidden" id="loadingOverlay">
-        <div class="loader-spinner"></div>
-        <div class="loader-text" id="loadingText">LOADING...</div>
-        <div class="loader-progress">
-            <div class="loader-progress-bar" id="loaderProgressBar"></div>
-        </div>
-    </div>
-
-    <!-- LOGOUT OVERLAY -->
-    <div class="logout-overlay" id="logoutOverlay">
-        <div class="logout-icon">👋</div>
-        <div class="logout-text">LOGGING OUT...</div>
-    </div>
-
-    <!-- MAIN APP -->
-    <div class="main-app" id="mainApp">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-logo">
-                <span>🎁</span>
-                <h2>GiftMaster</h2>
-                <p>Pro Tracker</p>
-            </div>
-            <nav class="sidebar-nav">
-                <button class="nav-item active" data-page="profile">
-                    <span class="nav-icon">👤</span>
-                    <span class="nav-label">Profile</span>
-                </button>
-                <button class="nav-item" data-page="entry">
-                    <span class="nav-icon">📝</span>
-                    <span class="nav-label">Entry Data</span>
-                </button>
-                <button class="nav-item" data-page="report">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-label">Report Data</span>
-                </button>
-                <button class="nav-item" data-page="rank">
-                    <span class="nav-icon">🏆</span>
-                    <span class="nav-label">Gift Rank</span>
-                </button>
-                <button class="nav-item" data-page="achievement">
-                    <span class="nav-icon">📈</span>
-                    <span class="nav-label">Total Achievement</span>
-                </button>
-            </nav>
-            <div class="sidebar-footer">
-                <button class="logout-btn" id="logoutBtn">
-                    <span>🚪</span>
-                    <span>Logout</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- PROFILE PAGE -->
-            <section class="page-section active" id="page-profile">
-                <div class="page-header">
-                    <h1>👤 My Profile</h1>
-                    <p>Kelola data profil akun pengguna Anda</p>
-                </div>
-                <div class="profile-container">
-                    <div class="card profile-photo-card">
-                        <div class="profile-photo-wrapper" id="photoWrapper" onclick="document.getElementById('photoInput').click()">
-                            <img id="photoPreview" src="" alt="Profile Photo" style="display:none;">
-                            <div class="profile-photo-placeholder" id="photoPlaceholder">👤</div>
-                            <div class="profile-photo-overlay">📷 Upload Foto</div>
-                        </div>
-                        <input type="file" id="photoInput" class="profile-photo-input" accept="image/*">
-                        <div class="profile-name-display" id="profileNameDisplay">Nama Pengguna</div>
-                        <div class="profile-role">GiftMaster Member</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">📋 Biodata Lengkap</div>
-                        <div class="form-group">
-                            <label>Nama Lengkap</label>
-                            <input type="text" id="profileName" placeholder="Masukkan nama lengkap">
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="profileEmail" placeholder="example@email.com">
-                        </div>
-                        <div class="form-group">
-                            <label>No. Telepon</label>
-                            <input type="tel" id="profilePhone" placeholder="+62 xxx xxxx xxxx">
-                        </div>
-                        <div class="form-group">
-                            <label>Alamat</label>
-                            <textarea id="profileAddress" placeholder="Masukkan alamat lengkap"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Tanggal Lahir</label>
-                            <input type="date" id="profileBirthday">
-                        </div>
-                        <div class="form-group">
-                            <label>Jenis Kelamin</label>
-                            <select id="profileGender">
-                                <option value="">Pilih jenis kelamin</option>
-                                <option value="Pria">Pria</option>
-                                <option value="Wanita">Wanita</option>
-                                <option value="Lainnya">Lainnya</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Pekerjaan</label>
-                            <input type="text" id="profileOccupation" placeholder="Masukkan pekerjaan">
-                        </div>
-                        <div class="form-group">
-                            <label>Bio Singkat</label>
-                            <textarea id="profileBio" placeholder="Ceritakan tentang diri Anda..."></textarea>
-                        </div>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" onclick="saveProfile()">💾 Simpan Profil</button>
-                            <button class="btn btn-secondary" onclick="loadProfile()">🔄 Reload</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ENTRY DATA PAGE -->
-            <section class="page-section" id="page-entry">
-                <div class="page-header">
-                    <h1>📝 Entry Data Gift</h1>
-                    <p>Input data gift harian Anda dengan cepat dan akurat</p>
-                </div>
-                <div class="entry-grid">
-                    <div class="card">
-                        <div class="card-title">🎯 Form Input Gift</div>
-                        <div class="form-group">
-                            <label>Username</label>
-                            <input type="text" id="entryUsername" placeholder="Masukkan username" list="userList">
-                            <datalist id="userList"></datalist>
-                        </div>
-                        <div class="form-group">
-                            <label>Total Gift</label>
-                            <input type="number" id="entryGift" placeholder="Masukkan jumlah gift" min="0" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label>Tanggal Input</label>
-                            <input type="date" id="entryDate">
-                        </div>
-                        <div class="quick-date-btns">
-                            <button class="quick-date-btn" onclick="setQuickDate('today')">📅 Hari Ini</button>
-                            <button class="quick-date-btn" onclick="setQuickDate('yesterday')">📅 Kemarin</button>
-                            <button class="quick-date-btn" onclick="setQuickDate('7days')">📅 7 Hari Lalu</button>
-                            <button class="quick-date-btn" onclick="setQuickDate('30days')">📅 30 Hari Lalu</button>
-                        </div>
-                        <div class="check-result" id="checkResult"></div>
-                        <div class="btn-group" style="margin-top:20px;">
-                            <button class="btn btn-primary" onclick="saveEntry()">💾 Save</button>
-                            <button class="btn btn-secondary" onclick="checkEntry()">🔍 Check</button>
-                            <button class="btn btn-success" onclick="clearEntryForm()">✨ Clear</button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">📋 Data Terkini</div>
-                        <div id="recentEntries" style="max-height:400px;overflow-y:auto;">
-                            <div class="empty-state">
-                                <div class="empty-icon">📭</div>
-                                <p>Belum ada data entry</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- REPORT DATA PAGE -->
-            <section class="page-section" id="page-report">
-                <div class="page-header">
-                    <h1>📊 Report Data</h1>
-                    <p>Lihat laporan gift harian dan grafik performa</p>
-                </div>
-                <div class="card" style="margin-bottom:25px;">
-                    <div class="card-title">📅 Filter Laporan</div>
-                    <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:flex-end;">
-                        <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px;">
-                            <label>Tanggal</label>
-                            <input type="date" id="reportDate" onchange="renderReport()">
-                        </div>
-                        <div class="btn-group" style="margin-top:0;">
-                            <button class="btn btn-primary" onclick="renderReport()">🔍 Tampilkan</button>
-                            <button class="btn btn-success" onclick="downloadCSV()">📥 Download CSV</button>
-                            <button class="btn btn-secondary" onclick="downloadTXT()">📥 Download TXT</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card" style="margin-bottom:25px;">
-                    <div class="card-title">📋 Laporan Harian</div>
-                    <div id="reportSummary" style="margin-bottom:15px;"></div>
-                    <div style="overflow-x:auto;">
-                        <table class="report-table" id="reportTable">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Username</th>
-                                    <th>Total Gift</th>
-                                    <th>Penerima</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reportTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">📈 Grafik 3D Harian User</div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
-                        <input type="date" id="chartStartDate" style="padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass);border-radius:8px;color:white;">
-                        <span style="color:var(--text-muted);align-self:center;">s/d</span>
-                        <input type="date" id="chartEndDate" style="padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass);border-radius:8px;color:white;">
-                        <button class="btn btn-primary btn-sm" onclick="renderUser3DChart()">🔄 Update Grafik</button>
-                    </div>
-                    <div class="chart-container" id="userChart3D"></div>
-                </div>
-            </section>
-
-            <!-- GIFT RANK PAGE -->
-            <section class="page-section" id="page-rank">
-                <div class="page-header">
-                    <h1>🏆 Gift Rank</h1>
-                    <p>Peringkat pemberi gift terbanyak</p>
-                </div>
-                <div class="podium-container" id="podiumContainer"></div>
-                <div class="card">
-                    <div class="card-title">📋 Daftar Peringkat Lengkap</div>
-                    <div class="rank-list" id="rankList"></div>
-                </div>
-            </section>
-
-            <!-- TOTAL ACHIEVEMENT PAGE -->
-            <section class="page-section" id="page-achievement">
-                <div class="page-header">
-                    <h1>📈 Total Achievement</h1>
-                    <p>Grafik total gift yang diberikan kepada masing-masing penerima</p>
-                </div>
-                <div class="card">
-                    <div class="card-title">🎯 Grafik 3D Achievement Penerima</div>
-                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
-                        <input type="date" id="achStartDate" style="padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass);border-radius:8px;color:white;">
-                        <span style="color:var(--text-muted);align-self:center;">s/d</span>
-                        <input type="date" id="achEndDate" style="padding:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border-glass);border-radius:8px;color:white;">
-                        <button class="btn btn-primary btn-sm" onclick="renderAchievementChart()">🔄 Update Grafik</button>
-                    </div>
-                    <div class="chart-container" id="achievementChart"></div>
-                </div>
-                <div class="card" style="margin-top:25px;">
-                    <div class="card-title">📊 Ringkasan Total Per Penerima</div>
-                    <div id="achievementSummary" style="display:flex;gap:20px;flex-wrap:wrap;margin-top:15px;"></div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- GIFT SEND TO MODAL -->
-    <div class="modal-overlay" id="giftSendModal">
-        <div class="modal-content">
-            <div class="modal-title">🎁 Gift Send To</div>
-            <div class="modal-subtitle">Pilih penerima gift untuk entry ini</div>
-            <div class="recipient-options" id="recipientOptions">
-                <div class="recipient-card" onclick="selectRecipient('Theo')">
-                    <div class="recipient-avatar">🧑‍💼</div>
-                    <div class="recipient-name">Theo</div>
-                    <div class="recipient-desc">Penerima Utama</div>
-                </div>
-                <div class="recipient-card" onclick="selectRecipient('Kevin')">
-                    <div class="recipient-avatar">🧑‍🎤</div>
-                    <div class="recipient-name">Kevin</div>
-                    <div class="recipient-desc">Penerima Kedua</div>
-                </div>
-                <div class="recipient-card" onclick="selectRecipient('Daddy')">
-                    <div class="recipient-avatar">🧑‍🦳</div>
-                    <div class="recipient-name">Daddy</div>
-                    <div class="recipient-desc">Penerima Ketiga</div>
-                </div>
-            </div>
-            <button class="btn btn-secondary" style="margin-top:20px;" onclick="closeGiftModal()">Batal</button>
-        </div>
-    </div>
-
-    <!-- TOAST CONTAINER -->
-    <div id="toastContainer"></div>
 
     <script>
-        // ===== SUPABASE CONFIGURATION =====
-        const SUPABASE_URL = 'https://dvfmlvueexnvgcnoiujr.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_KoCuMn0yU7Yp72mnNB0_jw_L3wupUq-';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Mengambil data dari localStorage atau inisialisasi objek kosong
+        let giftData = JSON.parse(localStorage.getItem('giftData')) || {};
 
-        const TABLE_PROFILES = 'profiles';
-        const TABLE_ENTRIES = 'gift_entries';
+        function saveData() {
+            localStorage.setItem('giftData', JSON.stringify(giftData));
+            updateCharts();
+        }
 
-        let pendingEntryData = null;
-
-        // ===== INITIALIZATION =====
-        document.addEventListener('DOMContentLoaded', function() {
-            createParticles();
-            initializeDateInputs();
-        });
-
-        function createParticles() {
-            const container = document.getElementById('particlesContainer');
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 15 + 's';
-                particle.style.animationDuration = (8 + Math.random() * 12) + 's';
-                particle.style.width = particle.style.height = (2 + Math.random() * 4) + 'px';
-                particle.style.background = ['#6c5ce7', '#fd79a8', '#fdcb6e', '#00cec9'][Math.floor(Math.random() * 4)];
-                container.appendChild(particle);
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            if(tab === 'input') document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+            if(tab === 'report') {
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+                renderTable();
+            }
+            if(tab === 'grafik') {
+                document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+                updateCharts();
             }
         }
 
-        function initializeDateInputs() {
-            const today = new Date().toISOString().split('T')[0];
-            const dateInputEl = document.getElementById('entryDate');
-            const reportDateEl = document.getElementById('reportDate');
-            if (dateInputEl) dateInputEl.value = today;
-            if (reportDateEl) reportDateEl.value = today;
+        // Fitur OCR Screenshot Reader
+        const screenshotInput = document.getElementById('screenshotInput');
+        const loadingText = document.getElementById('loadingText');
 
-            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            const chartStart = document.getElementById('chartStartDate');
-            const chartEnd = document.getElementById('chartEndDate');
-            const achStart = document.getElementById('achStartDate');
-            const achEnd = document.getElementById('achEndDate');
+        screenshotInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-            if (chartStart) chartStart.value = weekAgo;
-            if (chartEnd) chartEnd.value = today;
-            if (achStart) achStart.value = weekAgo;
-            if (achEnd) achEnd.value = today;
+            loadingText.style.display = 'block';
+
+            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+                loadingText.style.display = 'none';
+                parseReceiptText(text);
+                screenshotInput.value = '';
+            }).catch(err => {
+                loadingText.style.display = 'none';
+                alert('Gagal membaca gambar.');
+                console.error(err);
+            });
+        });
+
+        function parseReceiptText(text) {
+            const lines = text.split('\n');
+            let detectedName = "";
+            let detectedAmount = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (line.includes('+')) {
+                    let cleanNum = line.replace(/[^0-9]/g, '');
+                    if (cleanNum.length > 0) {
+                        detectedAmount = parseInt(cleanNum);
+                        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+                            let nextLine = lines[j].trim();
+                            if (nextLine.length > 1 && !nextLine.includes('2026') && !nextLine.includes('+')) {
+                                detectedName = nextLine.split(' ')[0];
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (detectedName && detectedAmount > 0) {
+                document.getElementById('nama').value = detectedName;
+                document.getElementById('jumlah').value = detectedAmount;
+                alert(`Berhasil mendeteksi!\nNama: ${detectedName}\nJumlah: ${detectedAmount}`);
+            } else {
+                alert("Pola otomatis tidak sepenuhnya dikenali. Silakan masukkan data secara manual.");
+            }
         }
 
-        // ===== TOMBOL MASUK =====
-        document.getElementById('enterBtn').addEventListener('click', function() {
-            const loginPage = document.getElementById('loginPage');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
-            const progressBar = document.getElementById('loaderProgressBar');
-
-            loginPage.classList.add('hidden');
-
-            setTimeout(() => {
-                loadingOverlay.classList.remove('hidden');
-                const loadingMessages = ['LOADING...', 'MEMUAT DATA...', 'MENYIAPKAN DASHBOARD...', 'HAMPIR SELESAI...'];
-                let msgIndex = 0;
-                const msgInterval = setInterval(() => {
-                    msgIndex = (msgIndex + 1) % loadingMessages.length;
-                    if (loadingText) loadingText.textContent = loadingMessages[msgIndex];
-                }, 600);
-
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    progress += Math.random() * 15 + 5;
-                    if (progress > 100) progress = 100;
-                    if (progressBar) progressBar.style.width = progress + '%';
-                    if (progress >= 100) {
-                        clearInterval(progressInterval);
-                        clearInterval(msgInterval);
-                        setTimeout(async () => {
-                            loadingOverlay.classList.add('hidden');
-                            const mainApp = document.getElementById('mainApp');
-                            mainApp.classList.add('visible');
-                            showToast('✅ Selamat datang di GiftMaster Pro!', 'success');
-                            await renderAll();
-                        }, 500);
-                    }
-                }, 200);
-            }, 400);
+        // Handle Submit Form & Akumulasi Tanggal (untuk grafik mingguan)
+        document.getElementById('giftForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nama = document.getElementById('nama').value.trim();
+            const jumlah = parseInt(document.getElementById('jumlah').value);
+            
+            const date = new Date().toISOString().split('T')[0];
+            if(!giftData[date]) giftData[date] = {};
+            giftData[date][nama] = (giftData[date][nama] || 0) + jumlah;
+            
+            saveData();
+            document.getElementById('giftForm').reset();
+            alert('Data Berhasil Disimpan & Terakumulasi!');
         });
 
-        // ===== LOGOUT =====
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            const logoutOverlay = document.getElementById('logoutOverlay');
-            logoutOverlay.classList.add('active');
+        // Render Tabel Report & Grand Total
+        function renderTable() {
+            const tableBody = document.getElementById('giftTableBody');
+            tableBody.innerHTML = '';
+            const keyword = document.getElementById('searchNama').value.toLowerCase();
 
-            setTimeout(() => {
-                logoutOverlay.classList.remove('active');
-                const mainApp = document.getElementById('mainApp');
-                mainApp.classList.remove('visible');
-                const loginPage = document.getElementById('loginPage');
-                loginPage.classList.remove('hidden');
-            }, 1800);
-        });
+            // Akumulasi global semua tanggal untuk report list
+            const aggregated = {};
+            let grandTotal = 0;
 
-        // ===== NAVIGATION =====
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const page = this.dataset.page;
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                this.classList.add('active');
-                document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
-                
-                const targetSection = document.getElementById('page-' + page);
-                if (targetSection) targetSection.classList.add('active');
-
-                if (page === 'report') {
-                    setTimeout(() => {
-                        renderUser3DChart();
-                        renderReport();
-                    }, 150);
-                } else if (page === 'achievement') {
-                    setTimeout(() => renderAchievementChart(), 150);
-                } else if (page === 'rank') {
-                    setTimeout(() => renderRank(), 150);
-                } else if (page === 'entry') {
-                    setTimeout(() => {
-                        updateRecentEntries();
-                        updateUserDatalist();
-                    }, 150);
+            Object.keys(giftData).forEach(date => {
+                const users = giftData[date];
+                for(let name in users) {
+                    aggregated[name] = (aggregated[name] || 0) + users[name];
                 }
             });
-        });
 
-        async function renderAll() {
-            try {
-                await Promise.all([
-                    loadProfile(),
-                    updateRecentEntries(),
-                    updateUserDatalist(),
-                    renderReport(),
-                    renderRank()
-                ]);
-            } catch (err) {
-                console.error("Error during initial render:", err);
-            }
-        }
+            const allNames = Object.keys(aggregated);
+            allNames.forEach(name => grandTotal += aggregated[name]);
 
-        // ===== SUPABASE HELPERS =====
-        async function getEntries() {
-            const { data, error } = await supabase
-                .from(TABLE_ENTRIES)
-                .select('*')
-                .order('created_at', { ascending: false });
-            if (error) {
-                console.error('Error fetching entries:', error);
-                return [];
-            }
-            return data || [];
-        }
+            const filteredNames = allNames.filter(name => name.toLowerCase().includes(keyword));
 
-        async function addEntry(entry) {
-            const { data, error } = await supabase
-                .from(TABLE_ENTRIES)
-                .insert([entry])
-                .select();
-            if (error) {
-                console.error('Error inserting entry:', error);
-                throw error;
-            }
-            return data;
-        }
-
-        async function getProfile() {
-            const { data, error } = await supabase
-                .from(TABLE_PROFILES)
-                .select('*')
-                .limit(1)
-                .single();
-            if (error && error.code !== 'PGRST116') {
-                console.error('Error fetching profile:', error);
-                return null;
-            }
-            return data;
-        }
-
-        async function saveProfileData(profile) {
-            const { data, error } = await supabase
-                .from(TABLE_PROFILES)
-                .upsert({ id: 1, ...profile }, { onConflict: 'id' });
-            if (error) {
-                console.error('Error saving profile:', error);
-                throw error;
-            }
-            return data;
-        }
-
-        // ===== PROFILE =====
-        async function loadProfile() {
-            const profile = await getProfile();
-            if (!profile) return;
-            document.getElementById('profileName').value = profile.name || '';
-            document.getElementById('profileEmail').value = profile.email || '';
-            document.getElementById('profilePhone').value = profile.phone || '';
-            document.getElementById('profileAddress').value = profile.address || '';
-            document.getElementById('profileBirthday').value = profile.birthday || '';
-            document.getElementById('profileGender').value = profile.gender || '';
-            document.getElementById('profileOccupation').value = profile.occupation || '';
-            document.getElementById('profileBio').value = profile.bio || '';
-            if (profile.photo) {
-                document.getElementById('photoPreview').src = profile.photo;
-                document.getElementById('photoPreview').style.display = 'block';
-                document.getElementById('photoPlaceholder').style.display = 'none';
-            }
-            document.getElementById('profileNameDisplay').textContent = profile.name || 'Nama Pengguna';
-        }
-
-        async function saveProfile() {
-            const profile = {
-                name: document.getElementById('profileName').value.trim(),
-                email: document.getElementById('profileEmail').value.trim(),
-                phone: document.getElementById('profilePhone').value.trim(),
-                address: document.getElementById('profileAddress').value.trim(),
-                birthday: document.getElementById('profileBirthday').value,
-                gender: document.getElementById('profileGender').value,
-                occupation: document.getElementById('profileOccupation').value.trim(),
-                bio: document.getElementById('profileBio').value.trim(),
-                photo: document.getElementById('photoPreview').src || ''
-            };
-
-            if (!profile.name) {
-                showToast('⚠️ Nama lengkap wajib diisi!', 'warning');
+            if (allNames.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>`;
                 return;
             }
 
-            try {
-                await saveProfileData(profile);
-                document.getElementById('profileNameDisplay').textContent = profile.name;
-                showToast('✅ Profil berhasil disimpan ke Supabase!', 'success');
-            } catch (err) {
-                showToast('❌ Gagal menyimpan profil: ' + err.message, 'error');
+            if (filteredNames.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="empty-row">Tidak ada data subject yang ditemukan.</td></tr>`;
+                return;
             }
-        }
 
-        document.getElementById('photoInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('photoPreview').src = e.target.result;
-                    document.getElementById('photoPreview').style.display = 'block';
-                    document.getElementById('photoPlaceholder').style.display = 'none';
-                    showToast('📷 Foto berhasil diupload (belum disimpan)!', 'info');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // ===== ENTRY DATA =====
-        async function saveEntry() {
-            const username = document.getElementById('entryUsername').value.trim();
-            const giftAmount = parseFloat(document.getElementById('entryGift').value);
-            const date = document.getElementById('entryDate').value;
-
-            if (!username) { showToast('⚠️ Username wajib diisi!', 'warning'); return; }
-            if (!giftAmount || giftAmount <= 0) { showToast('⚠️ Total gift harus lebih dari 0!', 'warning'); return; }
-            if (!date) { showToast('⚠️ Tanggal wajib diisi!', 'warning'); return; }
-
-            pendingEntryData = { username, giftAmount, date };
-            document.getElementById('giftSendModal').classList.add('active');
-        }
-
-        function closeGiftModal() {
-            document.getElementById('giftSendModal').classList.remove('active');
-            pendingEntryData = null;
-        }
-
-        async function selectRecipient(recipient) {
-            if (!pendingEntryData) return;
-
-            const newEntry = {
-                id: generateId(),
-                username: pendingEntryData.username,
-                gift_amount: pendingEntryData.giftAmount,
-                date: pendingEntryData.date,
-                recipient: recipient,
-                created_at: new Date().toISOString()
-            };
-
-            try {
-                await addEntry(newEntry);
-                document.getElementById('giftSendModal').classList.remove('active');
-                pendingEntryData = null;
-
-                clearEntryForm();
-                await Promise.all([
-                    updateRecentEntries(),
-                    updateUserDatalist(),
-                    renderReport(),
-                    renderRank()
-                ]);
-                showToast(`✅ Gift Rp ${newEntry.gift_amount.toLocaleString()} berhasil dikirim ke ${recipient}!`, 'success');
-            } catch (err) {
-                showToast('❌ Gagal menyimpan entry: ' + err.message, 'error');
-            }
-        }
-
-        async function checkEntry() {
-            const username = document.getElementById('entryUsername').value.trim();
-            const date = document.getElementById('entryDate').value;
-            const checkResult = document.getElementById('checkResult');
-
-            if (!username || !date) { showToast('⚠️ Isi username dan tanggal untuk check!', 'warning'); return; }
-
-            const { data, error } = await supabase
-                .from(TABLE_ENTRIES)
-                .select('*')
-                .eq('username', username)
-                .eq('date', date);
-
-            if (error) { showToast('❌ Error saat check: ' + error.message, 'error'); return; }
-
-            if (data.length > 0) {
-                const totalForDate = data.reduce((sum, e) => sum + e.gift_amount, 0);
-                const recipients = data.map(e => e.recipient).join(', ');
-                checkResult.className = 'check-result found';
-                checkResult.innerHTML = `
-                    <strong>✅ Data ditemukan!</strong><br>
-                    Username: <strong>${username}</strong><br>
-                    Tanggal: <strong>${date}</strong><br>
-                    Total Gift: <strong style="color:var(--accent-gold);">Rp ${totalForDate.toLocaleString()}</strong><br>
-                    Penerima: <strong>${recipients}</strong><br>
-                    <small style="color:var(--text-muted);">Anda dapat mengubah nominal dan menyimpan ulang.</small>
+            let no = 1;
+            filteredNames.forEach(name => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${no++}</td>
+                    <td>${escapeHtml(name)}</td>
+                    <td><strong style="color:var(--primary-color);">${aggregated[name].toLocaleString()}</strong></td>
                 `;
-            } else {
-                checkResult.className = 'check-result not-found';
-                checkResult.innerHTML = `
-                    <strong>❌ Data tidak ditemukan!</strong><br>
-                    Belum ada entry untuk username <strong>${username}</strong> pada tanggal <strong>${date}</strong>.<br>
-                    Silakan isi form dan klik Save untuk menambahkan.
-                `;
-            }
-        }
+                tableBody.appendChild(row);
+            });
 
-        function clearEntryForm() {
-            document.getElementById('entryUsername').value = '';
-            document.getElementById('entryGift').value = '';
-            document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
-            const checkResult = document.getElementById('checkResult');
-            checkResult.className = 'check-result';
-            checkResult.style.display = 'none';
-        }
-
-        function setQuickDate(type) {
-            const now = new Date();
-            let targetDate;
-            switch (type) {
-                case 'today': targetDate = now; break;
-                case 'yesterday': targetDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
-                case '7days': targetDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-                case '30days': targetDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-            }
-            document.getElementById('entryDate').value = targetDate.toISOString().split('T')[0];
-        }
-
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-        }
-
-        async function updateRecentEntries() {
-            const container = document.getElementById('recentEntries');
-            if (!container) return;
-            const entries = await getEntries();
-            const sorted = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 20);
-
-            if (sorted.length === 0) {
-                container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Belum ada data entry</p></div>`;
-                return;
-            }
-
-            container.innerHTML = sorted.map(entry => `
-                <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:6px;">
-                    <span style="font-size:18px;">👤</span>
-                    <div style="flex:1;">
-                        <strong style="font-size:13px;">${entry.username}</strong>
-                        <div style="font-size:11px;color:var(--text-muted);">${entry.date} · ${entry.recipient}</div>
-                    </div>
-                    <span style="font-weight:700;color:var(--accent-gold);font-size:14px;">Rp ${entry.gift_amount.toLocaleString()}</span>
-                </div>
-            `).join('');
-        }
-
-        async function updateUserDatalist() {
-            const entries = await getEntries();
-            const users = [...new Set(entries.map(e => e.username))];
-            const datalist = document.getElementById('userList');
-            if (datalist) datalist.innerHTML = users.map(u => `<option value="${u}">`).join('');
-        }
-
-        // ===== REPORT DATA =====
-        async function renderReport() {
-            const reportDateInput = document.getElementById('reportDate');
-            if (!reportDateInput) return;
-            const date = reportDateInput.value;
-            const { data: entries, error } = await supabase
-                .from(TABLE_ENTRIES)
-                .select('*')
-                .eq('date', date);
-
-            if (error) { showToast('❌ Error saat load report: ' + error.message, 'error'); return; }
-
-            const tableBody = document.getElementById('reportTableBody');
-            if (!tableBody) return;
-
-            if (entries.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:30px;">Tidak ada data untuk tanggal ini</td></tr>';
-                document.getElementById('reportSummary').innerHTML = '';
-                return;
-            }
-
-            const totalSum = entries.reduce((sum, e) => sum + e.gift_amount, 0);
-
-            document.getElementById('reportSummary').innerHTML = `
-                <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
-                    <div>
-                        <span style="color:var(--text-muted);font-size:13px;">Jumlah User:</span>
-                        <strong style="font-size:22px;margin-left:8px;">${entries.length}</strong>
-                    </div>
-                    <div>
-                        <span style="color:var(--text-muted);font-size:13px;">Total Keseluruhan:</span>
-                        <span class="total-highlight">Rp ${totalSum.toLocaleString()}</span>
-                    </div>
-                </div>
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'grand-total-row';
+            totalRow.innerHTML = `
+                <td colspan="2" style="text-align: right;">TOTAL KESELURUHAN:</td>
+                <td>${grandTotal.toLocaleString()}</td>
             `;
-
-            tableBody.innerHTML = entries.map((entry, index) => {
-                const recipientClass = entry.recipient.toLowerCase();
-                const badgeClass = recipientClass === 'theo' ? 'badge-theo' : recipientClass === 'kevin' ? 'badge-kevin' : 'badge-daddy';
-                return `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><strong>${entry.username}</strong></td>
-                        <td style="color:var(--accent-gold);font-weight:600;">Rp ${entry.gift_amount.toLocaleString()}</td>
-                        <td><span class="badge-chip ${badgeClass}">${entry.recipient}</span></td>
-                    </tr>
-                `;
-            }).join('');
+            tableBody.appendChild(totalRow);
         }
 
-        async function downloadCSV() {
-            const date = document.getElementById('reportDate').value;
-            const { data: entries, error } = await supabase
-                .from(TABLE_ENTRIES)
-                .select('*')
-                .eq('date', date);
-
-            if (error || entries.length === 0) { showToast('⚠️ Tidak ada data untuk didownload!', 'warning'); return; }
-
-            const totalSum = entries.reduce((sum, e) => sum + e.gift_amount, 0);
-            let csv = 'No,Username,Total Gift,Recipient,Date\n';
-            entries.forEach((e, i) => {
-                csv += `${i+1},"${e.username}",${e.gift_amount},"${e.recipient}","${e.date}"\n`;
+        // Render Line Chart untuk 1 Minggu Terakhir
+        let myChart;
+        function updateCharts() {
+            const ctx = document.getElementById('giftChart').getContext('2d');
+            
+            // Ambil 7 hari terakhir secara dinamis
+            const labels = [];
+            const totals = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateString = d.toISOString().split('T')[0];
+                labels.push(dateString);
+                
+                let dailyTotal = 0;
+                if (giftData[dateString]) {
+                    dailyTotal = Object.values(giftData[dateString]).reduce((a, b) => a + b, 0);
+                }
+                totals.push(dailyTotal);
+            }
+            
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        label: 'Total Gift Harian (7 Hari Terakhir)', 
+                        data: totals, 
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3
+                    }] 
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
             });
-            csv += `\n"","TOTAL",${totalSum},"",""\n`;
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            downloadBlob(blob, `report_${date}.csv`);
-            showToast('📥 CSV berhasil didownload!', 'success');
         }
 
-        async function downloadTXT() {
-            const date = document.getElementById('reportDate').value;
-            const { data: entries, error } = await supabase
-                .from(TABLE_ENTRIES)
-                .select('*')
-                .eq('date', date);
-
-            if (error || entries.length === 0) { showToast('⚠️ Tidak ada data untuk didownload!', 'warning'); return; }
-
-            const totalSum = entries.reduce((sum, e) => sum + e.gift_amount, 0);
-            let txt = `REPORT DATA GIFT - ${date}\n`;
-            txt += '='.repeat(50) + '\n\n';
-            entries.forEach((e, i) => {
-                txt += `${i+1}. Username: ${e.username}\n`;
-                txt += `   Total Gift: Rp ${e.gift_amount.toLocaleString()}\n`;
-                txt += `   Recipient: ${e.recipient}\n\n`;
-            });
-            txt += '='.repeat(50) + '\n';
-            txt += `TOTAL KESELURUHAN: Rp ${totalSum.toLocaleString()}\n`;
-            txt += `JUMLAH USER: ${entries.length}\n`;
-
-            const blob = new Blob([txt], { type: 'text/plain' });
-            downloadBlob(blob, `report_${date}.txt`);
-            showToast('📥 TXT berhasil didownload!', 'success');
-        }
-
-        function downloadBlob(blob, filename) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // ===== GIFT RANK =====
-        async function renderRank() {
-            const entries = await getEntries();
-            const userTotals = {};
-
-            entries.forEach(entry => {
-                if (!userTotals[entry.username]) userTotals[entry.username] = 0;
-                userTotals[entry.username] += entry.gift_amount;
-            });
-
-            const sorted = Object.entries(userTotals).sort((a, b) => b[1] - a[1]);
-            const podiumContainer = document.getElementById('podiumContainer');
-            const rankList = document.getElementById('rankList');
-
-            if (!podiumContainer || !rankList) return;
-
-            if (sorted.length === 0) {
-                podiumContainer.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><p>Belum ada data ranking</p></div>';
-                rankList.innerHTML = '<div class="empty-state"><p>Belum ada data</p></div>';
-                return;
-            }
-
-            const podiumOrder = [];
-            if (sorted.length >= 2) podiumOrder.push({ ...sorted[1], rank: 2 });
-            if (sorted.length >= 1) podiumOrder.push({ ...sorted[0], rank: 1 });
-            if (sorted.length >= 3) podiumOrder.push({ ...sorted[2], rank: 3 });
-
-            const podiumHTML = podiumOrder.map(item => {
-                const rankClass = item.rank === 1 ? 'first' : item.rank === 2 ? 'second' : 'third';
-                const rankIcon = item.rank === 1 ? '👑' : item.rank === 2 ? '🥈' : '🥉';
-                const avatarEmoji = item.rank === 1 ? '🏆' : item.rank === 2 ? '🥈' : '🥉';
-                const crownHTML = item.rank === 1 ? '<div class="crown">👑</div>' : '';
-                return `
-                    <div class="podium-spot ${rankClass}">
-                        <div class="podium-avatar">
-                            ${crownHTML}
-                            ${avatarEmoji}
-                        </div>
-                        <div class="podium-block">
-                            <div style="font-size:20px;">${rankIcon}</div>
-                            <div style="font-size:14px;font-weight:600;margin-top:5px;">${item[0]}</div>
-                            <div style="font-size:13px;margin-top:3px;">Rp ${item[1].toLocaleString()}</div>
-                        </div>
-                        <div class="podium-name">${item[0]}</div>
-                        <div class="podium-total">Rp ${item[1].toLocaleString()}</div>
-                    </div>
-                `;
-            }).join('');
-
-            podiumContainer.innerHTML = podiumHTML;
-
-            rankList.innerHTML = sorted.map((entry, index) => {
-                const rank = index + 1;
-                const rankClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : '';
-                const icon = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-                return `
-                    <div class="rank-item ${rankClass}">
-                        <div class="rank-number">${icon}</div>
-                        <div class="rank-name">${entry[0]}</div>
-                        <div class="rank-total">Rp ${entry[1].toLocaleString()}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ===== 3D CHARTS =====
-        async function renderUser3DChart() {
-            const chartDom = document.getElementById('userChart3D');
-            if (!chartDom || chartDom.clientHeight === 0) return;
-
-            const startDate = document.getElementById('chartStartDate').value;
-            const endDate = document.getElementById('chartEndDate').value;
-            const { data: entries, error } = await supabase
-                .from(TABLE_ENTRIES)
-                .select('*')
-                .gte('date', startDate)
-                .lte('date', endDate);
-
-            if (error) { console.error('Error fetching entries for chart:', error); return; }
-
-            if (entries.length === 0) {
-                chartDom.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>Tidak ada data pada rentang tanggal ini</p></div>';
-                return;
-            }
-
-            const dates = [...new Set(entries.map(e => e.date))].sort();
-            const users = [...new Set(entries.map(e => e.username))].sort();
-
-            const lineData = [];
-            dates.forEach((date, dateIdx) => {
-                users.forEach((user, userIdx) => {
-                    const total = entries.filter(e => e.date === date && e.username === user)
-                        .reduce((sum, e) => sum + e.gift_amount, 0);
-                    if (total > 0) {
-                        lineData.push([dateIdx, userIdx, total]);
-                    }
-                });
-            });
-
-            if (lineData.length === 0) {
-                chartDom.innerHTML = '<div class="empty-state"><p>Tidak ada data</p></div>';
-                return;
-            }
-
-            const maxVal = Math.max(...lineData.map(d => d[2])) || 1;
-
-            if (typeof echarts === 'undefined') return;
-            const chart = echarts.init(chartDom);
-            const option = {
-                tooltip: {
-                    formatter: function(params) {
-                        const date = dates[params.data[0]];
-                        const user = users[params.data[1]];
-                        return `<strong>${user}</strong><br>Tanggal: ${date}<br>Total Gift: <strong>Rp ${params.data[2].toLocaleString()}</strong>`;
-                    }
-                },
-                visualMap: {
-                    show: false,
-                    dimension: 2,
-                    min: 0,
-                    max: maxVal,
-                    inRange: {
-                        color: ['#00b894', '#00cec9', '#6c5ce7', '#fd79a8', '#fdcb6e', '#ff6b6b']
-                    }
-                },
-                xAxis3D: {
-                    type: 'category',
-                    data: dates,
-                    name: 'Tanggal',
-                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
-                    axisLabel: { color: '#b8b8d0', fontSize: 10 },
-                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
-                },
-                yAxis3D: {
-                    type: 'category',
-                    data: users,
-                    name: 'User',
-                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
-                    axisLabel: { color: '#b8b8d0', fontSize: 10 },
-                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
-                },
-                zAxis3D: {
-                    type: 'value',
-                    name: 'Gift',
-                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
-                    axisLabel: { color: '#b8b8d0', fontSize: 9 },
-                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
-                    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
-                },
-                grid3D: {
-                    viewControl: {
-                        projection: 'perspective',
-                        autoRotate: true,
-                        autoRotateSpeed: 8,
-                        distance: 180,
-                        alpha: 35,
-                        beta: 25,
-                        damping: 0.8
-                    },
-                    boxWidth: 180,
-                    boxDepth: 80,
-                    boxHeight: 90,
-                    axisPointer: {
-                        show: true,
-                        lineStyle: { color: '#6c5ce7' }
-                    },
-                    light: {
-                        main: {
-                            intensity: 1.2,
-                            shadow: true,
-                            shadowQuality: 'high',
-                            alpha: 50,
-                            beta: 40
-                        },
-                        ambient: {
-                            intensity: 0.4
-                        }
-                    },
-                    environment: 'transparent'
-                },
-                series: [{
-                    type: 'line3D',
-                    data: lineData,
-                    lineStyle: {
-                        width: 3,
-                        color: '#6c5ce7',
-                        opacity: 0.9
-                    },
-                    symbolSize: 8,
-                    symbol: 'circle',
-                    itemStyle: {
-                        color: '#fdcb6e',
-                        borderWidth: 1,
-                        borderColor: 'rgba(255,255,255,0.5)'
-                    }
-                }]
-            };
-
-            chart.setOption(option);
-            window.addEventListener('resize', () => chart.resize());
-        }
-
-        async function renderAchievementChart() {
-            const chartDom = document.getElementById('achievementChart');
-            if (!chartDom) return;
-
-            const startDate = document.getElementById('achStartDate').value;
-            const endDate = document.getElementById('achEndDate').value;
-            const { data: entries, error } = await supabase
-                .from(TABLE_ENTRIES)
-                .select('*')
-                .gte('date', startDate)
-                .lte('date', endDate);
-
-            if (error) { console.error('Error fetching entries for achievement chart:', error); return; }
-
-            if (entries.length === 0) {
-                chartDom.innerHTML = '<div class="empty-state"><div class="empty-icon">📈</div><p>Tidak ada data pada rentang tanggal ini</p></div>';
-                document.getElementById('achievementSummary').innerHTML = '';
-                return;
-            }
-
-            const recipients = ['Theo', 'Kevin', 'Daddy'];
-            const dates = [...new Set(entries.map(e => e.date))].sort();
-            const lineData = [];
-
-            dates.forEach((date, dateIdx) => {
-                recipients.forEach((recipient, recIdx) => {
-                    const total = entries.filter(e => e.date === date && e.recipient === recipient)
-                        .reduce((sum, e) => sum + e.gift_amount, 0);
-                    if (total > 0) {
-                        lineData.push([dateIdx, recIdx, total]);
-                    }
-                });
-            });
-
-            if (lineData.length === 0) {
-                chartDom.innerHTML = '<div class="empty-state"><p>Tidak ada data</p></div>';
-                document.getElementById('achievementSummary').innerHTML = '';
-                return;
-            }
-
-            const maxVal = Math.max(...lineData.map(d => d[2])) || 1;
-            const recipientColors = { 'Theo': '#6c5ce7', 'Kevin': '#00b894', 'Daddy': '#fdcb6e' };
-
-            if (typeof echarts === 'undefined') return;
-            const chart = echarts.init(chartDom);
-            const option = {
-                tooltip: {
-                    formatter: function(params) {
-                        const date = dates[params.data[0]];
-                        const recipient = recipients[params.data[1]];
-                        return `<strong>${recipient}</strong><br>Tanggal: ${date}<br>Total Gift: <strong>Rp ${params.data[2].toLocaleString()}</strong>`;
-                    }
-                },
-                visualMap: {
-                    show: false,
-                    dimension: 2,
-                    min: 0,
-                    max: maxVal,
-                    inRange: { color: ['#6c5ce7', '#00b894', '#fdcb6e', '#ff6b6b'] }
-                },
-                xAxis3D: {
-                    type: 'category',
-                    data: dates,
-                    name: 'Tanggal',
-                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
-                    axisLabel: { color: '#b8b8d0', fontSize: 10 },
-                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
-                },
-                yAxis3D: {
-                    type: 'category',
-                    data: recipients,
-                    name: 'Penerima',
-                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
-                    axisLabel: { color: '#b8b8d0', fontSize: 11 },
-                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
-                },
-                zAxis3D: {
-                    type: 'value',
-                    name: 'Total Gift',
-                    nameTextStyle: { color: '#b8b8d0', fontSize: 10 },
-                    axisLabel: { color: '#b8b8d0', fontSize: 9 },
-                    axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
-                    splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
-                },
-                grid3D: {
-                    viewControl: {
-                        projection: 'perspective',
-                        autoRotate: true,
-                        autoRotateSpeed: 6,
-                        distance: 170,
-                        alpha: 40,
-                        beta: 20,
-                        damping: 0.8
-                    },
-                    boxWidth: 160,
-                    boxDepth: 70,
-                    boxHeight: 100,
-                    axisPointer: { show: true, lineStyle: { color: '#fdcb6e' } },
-                    light: {
-                        main: { intensity: 1.3, shadow: true, shadowQuality: 'high', alpha: 45, beta: 35 },
-                        ambient: { intensity: 0.5 }
-                    },
-                    environment: 'transparent'
-                },
-                series: [{
-                    type: 'line3D',
-                    data: lineData,
-                    lineStyle: { width: 3, color: '#fdcb6e', opacity: 0.85 },
-                    symbolSize: 10,
-                    symbol: 'diamond',
-                    itemStyle: {
-                        color: function(params) {
-                            const recipient = recipients[params.data[1]];
-                            return recipientColors[recipient] || '#6c5ce7';
-                        },
-                        borderWidth: 2,
-                        borderColor: 'rgba(255,255,255,0.6)'
-                    }
-                }]
-            };
-
-            chart.setOption(option);
-            window.addEventListener('resize', () => chart.resize());
-
-            const summaryContainer = document.getElementById('achievementSummary');
-            if (summaryContainer) {
-                summaryContainer.innerHTML = recipients.map(rec => {
-                    const total = entries.filter(e => e.recipient === rec).reduce((sum, e) => sum + e.gift_amount, 0);
-                    const count = entries.filter(e => e.recipient === rec).length;
-                    const color = recipientColors[rec];
-                    return `
-                        <div style="flex:1;min-width:150px;padding:20px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid ${color}40;text-align:center;">
-                            <div style="font-size:35px;margin-bottom:8px;">${rec === 'Theo' ? '🧑‍💼' : rec === 'Kevin' ? '🧑‍🎤' : '🧑‍🦳'}</div>
-                            <div style="font-weight:700;font-size:16px;color:${color};">${rec}</div>
-                            <div style="font-size:20px;font-weight:800;margin:8px 0;color:var(--accent-gold);">Rp ${total.toLocaleString()}</div>
-                            <div style="font-size:12px;color:var(--text-muted);">${count} entry</div>
-                        </div>
-                    `;
-                }).join('');
+        function resetData() {
+            if (confirm("Apakah Anda yakin ingin mereset seluruh data?")) {
+                localStorage.removeItem('giftData');
+                giftData = {};
+                renderTable();
+                alert("Data berhasil direset.");
             }
         }
 
-        // ===== TOAST =====
-        function showToast(message, type) {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-            const toast = document.createElement('div');
-            toast.classList.add('toast', type);
-            const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
-            toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
-            container.appendChild(toast);
-
-            setTimeout(() => toast.classList.add('show'), 50);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 500);
-            }, 3500);
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
     </script>
 </body>
