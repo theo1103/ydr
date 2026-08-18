@@ -11,28 +11,62 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-hover: #818cf8;
+            /* Dark theme (default) */
             --bg: #0f172a;
             --surface: #1e293b;
             --surface-light: #334155;
             --text: #e2e8f0;
             --muted: #94a3b8;
             --border: #334155;
+            --primary: #6366f1;
+            --primary-hover: #818cf8;
             --danger: #ef4444;
             --success: #10b981;
             --warning: #f59e0b;
             --admin: #a78bfa;
             --radius: 16px;
             --shadow: 0 8px 32px rgba(0,0,0,0.3);
+            --overlay: rgba(255,255,255,0.05);
+            --overlay-hover: rgba(255,255,255,0.1);
+            --card-bg: rgba(30,41,59,0.8);
+            --login-bg: rgba(30,41,59,0.95);
+            --input-bg: rgba(255,255,255,0.05);
+            --table-header: rgba(255,255,255,0.03);
+            --google-btn-bg: #ffffff;
+            --google-btn-text: #1e293b;
+        }
+        body.light-mode {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-light: #e2e8f0;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --admin: #8b5cf6;
+            --radius: 16px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --overlay: rgba(0,0,0,0.03);
+            --overlay-hover: rgba(0,0,0,0.06);
+            --card-bg: rgba(255,255,255,0.9);
+            --login-bg: rgba(255,255,255,0.95);
+            --input-bg: #f1f5f9;
+            --table-header: #f1f5f9;
+            --google-btn-bg: #ffffff;
+            --google-btn-text: #1e293b;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: radial-gradient(circle at top, #1e293b, #0f172a);
+            background: radial-gradient(circle at top, var(--surface), var(--bg));
             color: var(--text);
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s, color 0.3s;
         }
         /* Login Overlay */
         #loginOverlay {
@@ -43,22 +77,22 @@
         }
         #loginOverlay.hidden { opacity:0; visibility:hidden; }
         .login-container {
-            background: rgba(30,41,59,0.95); backdrop-filter: blur(10px);
-            padding: 40px; border-radius: 24px; border:1px solid rgba(255,255,255,0.1);
+            background: var(--login-bg); backdrop-filter: blur(10px);
+            padding: 40px; border-radius: 24px; border:1px solid var(--border);
             box-shadow: var(--shadow); text-align:center; max-width:450px; width:100%;
             animation: slideUp 0.6s ease;
         }
         @keyframes slideUp { from { transform: translateY(30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-        .login-container h2 { color: #fff; margin-bottom: 10px; font-size: 28px; }
+        .login-container h2 { color: var(--text); margin-bottom: 10px; font-size: 28px; }
         .login-container p { color: var(--muted); margin-bottom: 30px; }
-        .login-tabs { display:flex; gap:8px; margin-bottom:25px; background: rgba(255,255,255,0.05); padding:4px; border-radius:12px; }
+        .login-tabs { display:flex; gap:8px; margin-bottom:25px; background: var(--overlay); padding:4px; border-radius:12px; }
         .login-tab-btn { flex:1; padding:10px; cursor:pointer; border:none; border-radius:8px; background:transparent; color:var(--muted); font-weight:600; font-size:13px; transition:all 0.25s; }
-        .login-tab-btn.active { background:var(--surface-light); color:#fff; }
+        .login-tab-btn.active { background:var(--surface-light); color:var(--text); }
         .login-tab-content { display:none; animation:fadeIn 0.3s; }
         .login-tab-content.active { display:block; }
         .btn { width:100%; padding:12px 20px; border:none; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.3s; margin-bottom:10px; display:flex; align-items:center; justify-content:center; gap:10px; }
-        .btn-google { background:white; color:#1e293b; border:2px solid rgba(255,255,255,0.3); }
-        .btn-google:hover { background:#f1f5f9; }
+        .btn-google { background:var(--google-btn-bg); color:var(--google-btn-text); border:2px solid var(--border); }
+        .btn-google:hover { background: var(--overlay-hover); }
         .btn-email { background:var(--primary); color:white; }
         .btn-email:hover { background:var(--primary-hover); }
         .btn-admin { background:var(--admin); color:white; }
@@ -70,16 +104,19 @@
         .app-container { max-width:1200px; margin:0 auto; }
         .header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:20px; }
         .user-info { display:flex; align-items:center; gap:12px; background:var(--surface); padding:10px 20px; border-radius:50px; border:1px solid var(--border); }
-        .user-avatar { width:45px; height:45px; border-radius:50%; border:2px solid var(--primary); background:var(--surface-light); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:20px; color:#fff; overflow:hidden; }
+        .user-avatar { width:45px; height:45px; border-radius:50%; border:2px solid var(--primary); background:var(--surface-light); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:20px; color:var(--text); overflow:hidden; }
         .user-avatar img { width:100%; height:100%; object-fit:cover; }
         .user-name { font-weight:600; }
         .user-email { font-size:12px; color:var(--muted); }
-        .logout-btn { padding:10px 20px; background:rgba(239,68,68,0.15); color:#fca5a5; border:none; border-radius:50px; cursor:pointer; font-weight:600; font-size:14px; transition:background 0.3s; }
+        .header-actions { display:flex; gap:10px; align-items:center; }
+        .theme-toggle, .logout-btn { padding:10px 20px; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:50px; cursor:pointer; font-weight:600; font-size:14px; transition:background 0.3s; display:flex; align-items:center; gap:8px; }
+        .theme-toggle:hover { background:var(--overlay-hover); }
+        .logout-btn { background:rgba(239,68,68,0.15); color:#fca5a5; border-color:transparent; }
         .logout-btn:hover { background:rgba(239,68,68,0.3); }
-        /* Icon Navigation - Gadget Style */
+        /* Icon Navigation */
         .icon-nav {
             display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;
-            padding:10px; background:rgba(30,41,59,0.6); border-radius:20px; border:1px solid var(--border);
+            padding:10px; background:var(--overlay); border-radius:20px; border:1px solid var(--border);
             backdrop-filter: blur(10px);
         }
         .icon-item {
@@ -87,7 +124,7 @@
             cursor:pointer; border-radius:16px; transition:all 0.25s; min-width:80px;
             background:transparent; border:none; color:var(--muted);
         }
-        .icon-item:hover { background:var(--surface-light); transform:translateY(-3px); color:#fff; }
+        .icon-item:hover { background:var(--overlay-hover); transform:translateY(-3px); color:var(--text); }
         .icon-item.active { background:var(--primary); color:white; box-shadow:0 8px 20px rgba(99,102,241,0.4); }
         .icon-item .icon { font-size:28px; line-height:1; }
         .icon-item .label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
@@ -97,30 +134,30 @@
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:25px; margin-bottom:20px; box-shadow:var(--shadow); }
         .card h2 { color:var(--primary-hover); font-size:24px; margin-bottom:20px; text-align:center; }
-        .nav-tabs { display:flex; gap:8px; margin-bottom:25px; background:rgba(255,255,255,0.05); padding:6px; border-radius:12px; flex-wrap:wrap; }
+        .nav-tabs { display:flex; gap:8px; margin-bottom:25px; background:var(--overlay); padding:6px; border-radius:12px; flex-wrap:wrap; }
         .tab-btn { flex:1; min-width:100px; padding:12px; cursor:pointer; border:none; border-radius:8px; background:transparent; color:var(--muted); font-weight:600; font-size:13px; transition:all 0.25s; }
-        .tab-btn.active { background:var(--surface-light); color:#fff; }
+        .tab-btn.active { background:var(--surface-light); color:var(--text); }
         .tab-content { display:none; }
         .tab-content.active { display:block; animation:fadeIn 0.3s; }
         .form-group { margin-bottom:20px; }
         label { display:block; margin-bottom:8px; font-weight:600; font-size:14px; color:var(--muted); }
-        input, select, textarea { width:100%; padding:12px 16px; border:1px solid var(--border); border-radius:10px; font-size:15px; background:rgba(255,255,255,0.05); color:var(--text); transition:border-color 0.2s, box-shadow 0.2s; }
+        input, select, textarea { width:100%; padding:12px 16px; border:1px solid var(--border); border-radius:10px; font-size:15px; background:var(--input-bg); color:var(--text); transition:border-color 0.2s, box-shadow 0.2s; }
         input:focus, select:focus, textarea:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(99,102,241,0.2); }
         textarea { min-height:100px; resize:vertical; }
         .btn-primary { background:var(--primary); color:white; padding:12px 24px; border:none; border-radius:12px; font-weight:600; cursor:pointer; transition:background 0.3s; width:100%; }
         .btn-primary:hover { background:var(--primary-hover); }
         .btn-secondary { background:var(--surface-light); color:var(--text); padding:10px 20px; border:none; border-radius:10px; cursor:pointer; transition:background 0.3s; }
-        .btn-secondary:hover { background:#475569; }
+        .btn-secondary:hover { background: var(--overlay-hover); }
         .btn-danger { background:var(--danger); color:white; padding:10px 20px; border:none; border-radius:10px; cursor:pointer; }
         .summary-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px; margin-bottom:20px; }
-        .card-metric { background:rgba(255,255,255,0.05); border:1px solid var(--border); padding:15px; border-radius:12px; text-align:center; }
+        .card-metric { background:var(--overlay); border:1px solid var(--border); padding:15px; border-radius:12px; text-align:center; }
         .card-metric span { font-size:12px; color:var(--muted); text-transform:uppercase; }
         .card-metric h3 { margin:5px 0 0; font-size:22px; color:var(--primary-hover); }
         table { width:100%; border-collapse:collapse; margin-top:10px; }
         th, td { padding:14px 12px; border-bottom:1px solid var(--border); text-align:left; font-size:14px; }
-        th { background:rgba(255,255,255,0.03); cursor:pointer; user-select:none; color:var(--muted); }
+        th { background:var(--table-header); cursor:pointer; user-select:none; color:var(--muted); }
         .grand-total-row { background:rgba(99,102,241,0.1) !important; font-weight:bold; }
-        .chart-container { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:25px; }
+        .chart-container { background:var(--overlay); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:25px; }
         .error-message { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; padding:10px 15px; border-radius:8px; margin-bottom:15px; font-size:14px; display:none; }
         .error-message.show { display:block; }
         .admin-panel { background:rgba(167,139,250,0.1); border:2px solid var(--admin); border-radius:12px; padding:20px; margin-bottom:25px; }
@@ -129,12 +166,13 @@
         .admin-stat-value { font-size:24px; font-weight:700; color:var(--admin); }
         .quick-date-buttons { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
         .quick-date-btn { padding:6px 12px; background:var(--surface-light); border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; color:var(--text); }
-        .quick-date-btn.active { background:var(--primary); border-color:var(--primary); }
+        .quick-date-btn.active { background:var(--primary); border-color:var(--primary); color:white; }
         .berita-list a { color:var(--text); text-decoration:none; display:block; padding:10px; border-bottom:1px solid var(--border); transition:background 0.2s; }
-        .berita-list a:hover { background:rgba(255,255,255,0.05); }
+        .berita-list a:hover { background:var(--overlay-hover); }
         @media (max-width: 768px) {
             .icon-nav { overflow-x:auto; flex-wrap:nowrap; justify-content:flex-start; }
             .header { flex-direction:column; align-items:stretch; }
+            .header-actions { justify-content:space-between; }
         }
     </style>
 </head>
@@ -182,7 +220,12 @@
                         <div class="user-email" id="userEmail"></div>
                     </div>
                 </div>
-                <button class="logout-btn" onclick="handleLogout()">⚡ Keluar</button>
+                <div class="header-actions">
+                    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn">
+                        <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+                    </button>
+                    <button class="logout-btn" onclick="handleLogout()">⚡ Keluar</button>
+                </div>
             </div>
 
             <!-- Admin Panel -->
@@ -234,7 +277,7 @@
                         <button class="tab-btn" onclick="switchTab('grafikHarian')">Grafik Harian</button>
                     </div>
                     <div id="inputTab" class="tab-content active">
-                        <div style="background:rgba(255,255,255,0.03); padding:20px; border-radius:12px; border:2px dashed var(--border); margin-bottom:25px; text-align:center;">
+                        <div style="background:var(--overlay); padding:20px; border-radius:12px; border:2px dashed var(--border); margin-bottom:25px; text-align:center;">
                             <label for="screenshotInput" style="color:var(--primary-hover); cursor:pointer; font-size:15px; font-weight:700;">📷 Upload Screenshot (Auto-Scan OCR)</label>
                             <p style="margin:5px 0 12px; color:var(--muted); font-size:13px;">Pilih gambar screenshot untuk membaca data otomatis.</p>
                             <input type="file" id="screenshotInput" accept="image/*" style="display:none;">
@@ -290,7 +333,7 @@
                                 <div><button class="btn-primary" onclick="validateAndUpdateHarianChart()">🔄 Update</button></div>
                             </div>
                             <div id="harianChartError" class="error-message"></div>
-                            <div id="harianSummaryInfo" style="display:none; flex-wrap:wrap; gap:15px; margin-bottom:15px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                            <div id="harianSummaryInfo" style="display:none; flex-wrap:wrap; gap:15px; margin-bottom:15px; padding:10px; background:var(--overlay); border-radius:8px;">
                                 <span>📅 Rentang: <strong id="harianRangeInfo"></strong></span>
                                 <span>💰 Total: <strong id="harianTotalInfo" style="color:var(--primary-hover);"></strong></span>
                                 <span>📈 Rata-rata: <strong id="harianAverageInfo" style="color:var(--success);"></strong></span>
@@ -375,11 +418,41 @@
         const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
         window.google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCallback });
 
+        // ============ THEME TOGGLE ============
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('themeIcon').textContent = '☀️';
+                document.getElementById('themeLabel').textContent = 'Light';
+            } else {
+                document.body.classList.remove('light-mode');
+                document.getElementById('themeIcon').textContent = '🌙';
+                document.getElementById('themeLabel').textContent = 'Dark';
+            }
+            localStorage.setItem('yadoru_theme', theme);
+        }
+
+        function toggleTheme() {
+            const isLight = document.body.classList.contains('light-mode');
+            applyTheme(isLight ? 'dark' : 'light');
+        }
+
+        // Load theme on startup
+        (function loadTheme() {
+            const savedTheme = localStorage.getItem('yadoru_theme') || 'dark';
+            applyTheme(savedTheme);
+        })();
+
         function switchLoginTab(tab) {
             document.querySelectorAll('.login-tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.login-tab-btn').forEach(b => b.classList.remove('active'));
-            if (tab === 'user') { document.getElementById('userLoginTab').classList.add('active'); document.querySelector('.login-tab-btn:first-child').classList.add('active'); }
-            else { document.getElementById('adminLoginTab').classList.add('active'); document.querySelector('.login-tab-btn:last-child').classList.add('active'); }
+            if (tab === 'user') {
+                document.getElementById('userLoginTab').classList.add('active');
+                document.querySelector('.login-tab-btn:first-child').classList.add('active');
+            } else {
+                document.getElementById('adminLoginTab').classList.add('active');
+                document.querySelector('.login-tab-btn:last-child').classList.add('active');
+            }
             hideLoginError();
         }
         function showLoginError(msg) { const e = document.getElementById('loginError'); e.textContent = msg; e.classList.add('show'); }
@@ -414,8 +487,13 @@
             document.getElementById('mainApp').style.display = 'block';
             document.getElementById('userName').textContent = currentUser.name;
             document.getElementById('userEmail').textContent = currentUser.email;
-            if (currentUser.isAdmin) { document.getElementById('adminBadge').style.display = 'inline-block'; document.getElementById('adminPanel').style.display = 'block'; }
-            else { document.getElementById('adminBadge').style.display = 'none'; document.getElementById('adminPanel').style.display = 'none'; }
+            if (currentUser.isAdmin) {
+                document.getElementById('adminBadge').style.display = 'inline-block';
+                document.getElementById('adminPanel').style.display = 'block';
+            } else {
+                document.getElementById('adminBadge').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'none';
+            }
             generateAvatar();
             initializeApp();
             loadProfile();
@@ -424,7 +502,10 @@
         }
         function generateAvatar() {
             const container = document.getElementById('userAvatarContainer');
-            if (currentUser.avatar) { container.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;object-fit:cover;">`; return; }
+            if (currentUser.avatar) {
+                container.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;object-fit:cover;">`;
+                return;
+            }
             container.textContent = currentUser.name.charAt(0).toUpperCase();
             container.style.background = currentUser.isAdmin ? 'var(--admin)' : 'var(--primary)';
             container.style.color = 'white';
@@ -433,7 +514,11 @@
             container.style.alignItems = 'center';
             container.style.justifyContent = 'center';
         }
-        function checkExistingSession() { const saved = localStorage.getItem('yadoru_user'); if (saved) { currentUser = JSON.parse(saved); showMainApp(); } else showLoginOverlay(); }
+        function checkExistingSession() {
+            const saved = localStorage.getItem('yadoru_user');
+            if (saved) { currentUser = JSON.parse(saved); showMainApp(); }
+            else showLoginOverlay();
+        }
 
         // ============ NAVIGATION ============
         function showSection(sectionId, btn) {
@@ -494,8 +579,13 @@
                     }
                 }
             }
-            if (detectedName && detectedAmount > 0) { document.getElementById('nama').value = detectedName; document.getElementById('jumlah').value = detectedAmount; alert(`Terdeteksi: ${detectedName} - ${detectedAmount}`); }
-            else alert('Pola tidak dikenali, masukkan manual.');
+            if (detectedName && detectedAmount > 0) {
+                document.getElementById('nama').value = detectedName;
+                document.getElementById('jumlah').value = detectedAmount;
+                alert(`Terdeteksi: ${detectedName} - ${detectedAmount}`);
+            } else {
+                alert('Pola tidak dikenali, masukkan manual.');
+            }
         }
         document.getElementById('giftForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -513,7 +603,13 @@
             alert(`Data tersimpan untuk ${date}!`);
             if (document.getElementById('grafikHarianTab').classList.contains('active')) validateAndUpdateHarianChart();
         });
-        function toggleSortColumn(col) { const sel = document.getElementById('sortSelect'); if (col==='name') sel.value = sel.value==='name_asc'?'name_desc':'name_asc'; if (col==='total') sel.value = sel.value==='total_desc'?'total_asc':'total_desc'; if (col==='time') sel.value = sel.value==='time_desc'?'time_asc':'time_desc'; renderTable(); }
+        function toggleSortColumn(col) {
+            const sel = document.getElementById('sortSelect');
+            if (col==='name') sel.value = sel.value==='name_asc'?'name_desc':'name_asc';
+            if (col==='total') sel.value = sel.value==='total_desc'?'total_asc':'total_desc';
+            if (col==='time') sel.value = sel.value==='time_desc'?'time_asc':'time_desc';
+            renderTable();
+        }
         function resetDateFilter() { document.getElementById('filterDate').value=''; renderTable(); }
         function renderTable() {
             const tbody = document.getElementById('giftTableBody'); tbody.innerHTML = '';
@@ -527,74 +623,300 @@
             let targetDate = filterDate || (allDates.length ? allDates[allDates.length-1] : null);
             const aggregated = {}; let grandTotal = 0;
             const targetDates = filterDate ? [filterDate] : Object.keys(giftData);
-            targetDates.forEach(date => { if (giftData[date]) { for (let name in giftData[date]) { if (!aggregated[name]) aggregated[name] = {total:0,lastTime:giftData[date][name].lastTime}; aggregated[name].total += giftData[date][name].total; if (giftData[date][name].lastTime > aggregated[name].lastTime) aggregated[name].lastTime = giftData[date][name].lastTime; } } });
+            targetDates.forEach(date => {
+                if (giftData[date]) {
+                    for (let name in giftData[date]) {
+                        if (!aggregated[name]) aggregated[name] = { total: 0, lastTime: giftData[date][name].lastTime };
+                        aggregated[name].total += giftData[date][name].total;
+                        if (giftData[date][name].lastTime > aggregated[name].lastTime) aggregated[name].lastTime = giftData[date][name].lastTime;
+                    }
+                }
+            });
             const allNames = Object.keys(aggregated);
-            if (targetDate && giftData[targetDate]) { Object.values(giftData[targetDate]).forEach(item => grandTotal += item.total); document.getElementById('labelStatGift').innerText = filterDate ? `Total Gift (${targetDate})` : `Total Gift (Terkini: ${targetDate})`; }
-            else document.getElementById('labelStatGift').innerText = "Total Keseluruhan Gift";
+            if (targetDate && giftData[targetDate]) {
+                Object.values(giftData[targetDate]).forEach(item => grandTotal += item.total);
+                document.getElementById('labelStatGift').innerText = filterDate ? `Total Gift (${targetDate})` : `Total Gift (Terkini: ${targetDate})`;
+            } else {
+                document.getElementById('labelStatGift').innerText = "Total Keseluruhan Gift";
+            }
             document.getElementById('statTotalGift').innerText = grandTotal.toLocaleString();
             document.getElementById('statTotalSubject').innerText = allNames.length;
             let filtered = allNames.filter(n => n.toLowerCase().includes(keyword));
-            filtered.sort((a,b) => { if (sortBy==='name_asc') return a.localeCompare(b); if (sortBy==='name_desc') return b.localeCompare(a); if (sortBy==='total_desc') return aggregated[b].total-aggregated[a].total; if (sortBy==='total_asc') return aggregated[a].total-aggregated[b].total; if (sortBy==='time_desc') return aggregated[b].lastTime.localeCompare(aggregated[a].lastTime); if (sortBy==='time_asc') return aggregated[a].lastTime.localeCompare(aggregated[b].lastTime); return 0; });
-            if (!Object.keys(giftData).length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">Belum ada data gift.</td></tr>'; return; }
-            if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">Tidak ada data subject.</td></tr>'; return; }
+            filtered.sort((a,b) => {
+                if (sortBy==='name_asc') return a.localeCompare(b);
+                if (sortBy==='name_desc') return b.localeCompare(a);
+                if (sortBy==='total_desc') return aggregated[b].total-aggregated[a].total;
+                if (sortBy==='total_asc') return aggregated[a].total-aggregated[b].total;
+                if (sortBy==='time_desc') return aggregated[b].lastTime.localeCompare(aggregated[a].lastTime);
+                if (sortBy==='time_asc') return aggregated[a].lastTime.localeCompare(aggregated[b].lastTime);
+                return 0;
+            });
+            if (!Object.keys(giftData).length) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">Belum ada data gift.</td></tr>';
+                return;
+            }
+            if (!filtered.length) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">Tidak ada data subject.</td></tr>';
+                return;
+            }
             let no = 1;
-            filtered.forEach(name => { const row = document.createElement('tr'); row.innerHTML = `<td>${no++}</td><td><b>${escapeHtml(name)}</b></td><td><small>📅 ${aggregated[name].lastTime}</small></td><td><strong style="color:var(--primary-hover)">${aggregated[name].total.toLocaleString()}</strong></td>`; tbody.appendChild(row); });
-            const totalRow = document.createElement('tr'); totalRow.className = 'grand-total-row'; totalRow.innerHTML = `<td colspan="3" style="text-align:right">TOTAL KESELURUHAN:</td><td>${grandTotal.toLocaleString()}</td>`; tbody.appendChild(totalRow);
+            filtered.forEach(name => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${no++}</td><td><b>${escapeHtml(name)}</b></td><td><small>📅 ${aggregated[name].lastTime}</small></td><td><strong style="color:var(--primary-hover)">${aggregated[name].total.toLocaleString()}</strong></td>`;
+                tbody.appendChild(row);
+            });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'grand-total-row';
+            totalRow.innerHTML = `<td colspan="3" style="text-align:right">TOTAL KESELURUHAN:</td><td>${grandTotal.toLocaleString()}</td>`;
+            tbody.appendChild(totalRow);
         }
         function exportToCSV() {
-            let csv = "data:text/csv;charset=utf-8,No,Nama Subject,Waktu Input Terakhir,Total Gift\n"; let no=1; const agg={};
-            Object.keys(giftData).forEach(date => { for (let name in giftData[date]) { if (!agg[name]) agg[name]={total:0,lastTime:giftData[date][name].lastTime}; agg[name].total += giftData[date][name].total; } });
+            let csv = "data:text/csv;charset=utf-8,No,Nama Subject,Waktu Input Terakhir,Total Gift\n";
+            let no = 1;
+            const agg = {};
+            Object.keys(giftData).forEach(date => {
+                for (let name in giftData[date]) {
+                    if (!agg[name]) agg[name] = { total: 0, lastTime: giftData[date][name].lastTime };
+                    agg[name].total += giftData[date][name].total;
+                }
+            });
             for (let name in agg) csv += `${no++},"${name}","${agg[name].lastTime}",${agg[name].total}\n`;
-            const link = document.createElement('a'); link.href = encodeURI(csv); link.download = 'yadoru_gift_report.csv'; link.click();
+            const link = document.createElement('a');
+            link.href = encodeURI(csv);
+            link.download = 'yadoru_gift_report.csv';
+            link.click();
         }
-        function initDateFilter() { const e=document.getElementById('endDate'), s=document.getElementById('startDate'); if(!e.value){ e.value=new Date().toISOString().split('T')[0]; const p=new Date(); p.setDate(p.getDate()-6); s.value=p.toISOString().split('T')[0]; } }
+        function initDateFilter() {
+            const e=document.getElementById('endDate'), s=document.getElementById('startDate');
+            if(!e.value){
+                e.value = new Date().toISOString().split('T')[0];
+                const p = new Date();
+                p.setDate(p.getDate()-6);
+                s.value = p.toISOString().split('T')[0];
+            }
+        }
         function validateAndUpdateCharts() {
             const s=document.getElementById('startDate').value, e=document.getElementById('endDate').value, err=document.getElementById('chartError');
-            if(!s||!e){err.textContent='⚠️ Pilih tanggal mulai dan selesai.'; err.classList.add('show'); return;}
-            if(new Date(s)>new Date(e)){err.textContent='⚠️ Tanggal selesai tidak boleh lebih awal.'; err.classList.add('show'); return;}
+            if(!s||!e){ err.textContent='⚠️ Pilih tanggal mulai dan selesai.'; err.classList.add('show'); return; }
+            if(new Date(s)>new Date(e)){ err.textContent='⚠️ Tanggal selesai tidak boleh lebih awal.'; err.classList.add('show'); return; }
             err.classList.remove('show'); updateCharts();
         }
         function updateCharts() {
-            const ctx=document.getElementById('giftChart').getContext('2d'); const s=document.getElementById('startDate').value, e=document.getElementById('endDate').value;
-            const labels=[]; let curr=new Date(s), end=new Date(e); while(curr<=end){ labels.push(curr.toISOString().split('T')[0]); curr.setDate(curr.getDate()+1); }
+            const ctx=document.getElementById('giftChart').getContext('2d');
+            const s=document.getElementById('startDate').value, e=document.getElementById('endDate').value;
+            const labels=[]; let curr=new Date(s), end=new Date(e);
+            while(curr<=end){ labels.push(curr.toISOString().split('T')[0]); curr.setDate(curr.getDate()+1); }
             const users=new Set(); labels.forEach(d=>{ if(giftData[d]) Object.keys(giftData[d]).forEach(u=>users.add(u)); });
             const palette=['#6366f1','#ef4444','#10b981','#f59e0b','#3b82f6','#8b5cf6','#ec4899']; let ci=0;
-            const datasets=[]; users.forEach(user=>{ const data=labels.map(d=>giftData[d]&&giftData[d][user]?giftData[d][user].total:0); const c=palette[ci%palette.length]; ci++; datasets.push({label:user,data,borderColor:c,backgroundColor:c,borderWidth:2,fill:false,tension:0.3}); });
-            if(myChart) myChart.destroy(); myChart=new Chart(ctx,{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{position:'bottom'}}}});
+            const datasets=[];
+            users.forEach(user=>{
+                const data=labels.map(d=>giftData[d]&&giftData[d][user]?giftData[d][user].total:0);
+                const c=palette[ci%palette.length]; ci++;
+                datasets.push({label:user,data,borderColor:c,backgroundColor:c,borderWidth:2,fill:false,tension:0.3});
+            });
+            if(myChart) myChart.destroy();
+            myChart=new Chart(ctx,{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{position:'bottom'}}}});
         }
-        function initHarianDateFilter(){ const e=document.getElementById('harianEndDate'), s=document.getElementById('harianStartDate'); if(!e.value){ e.value=new Date().toISOString().split('T')[0]; const p=new Date(); p.setDate(p.getDate()-6); s.value=p.toISOString().split('T')[0]; } }
-        function setQuickDateRange(days, event){ const end=new Date(), start=new Date(); start.setDate(start.getDate()-(days-1)); document.getElementById('harianStartDate').value=start.toISOString().split('T')[0]; document.getElementById('harianEndDate').value=end.toISOString().split('T')[0]; document.querySelectorAll('.quick-date-btn').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); validateAndUpdateHarianChart(); }
-        function validateAndUpdateHarianChart(){ const s=document.getElementById('harianStartDate').value, e=document.getElementById('harianEndDate').value, err=document.getElementById('harianChartError'); if(!s||!e){err.textContent='⚠️ Pilih tanggal mulai dan selesai.'; err.classList.add('show'); return;} const diff=Math.floor((new Date(e)-new Date(s))/(86400000)); if(diff<0){err.textContent='⚠️ Tanggal selesai tidak boleh lebih awal.'; err.classList.add('show'); return;} if(diff<2){err.textContent='⚠️ Rentang minimal 3 hari.'; err.classList.add('show'); return;} if(diff>30){err.textContent='⚠️ Rentang maksimal 1 bulan (31 hari).'; err.classList.add('show'); return;} err.classList.remove('show'); updateHarianChart(s,e); }
+        function initHarianDateFilter(){
+            const e=document.getElementById('harianEndDate'), s=document.getElementById('harianStartDate');
+            if(!e.value){
+                e.value = new Date().toISOString().split('T')[0];
+                const p = new Date();
+                p.setDate(p.getDate()-6);
+                s.value = p.toISOString().split('T')[0];
+            }
+        }
+        function setQuickDateRange(days, event){
+            const end=new Date(), start=new Date();
+            start.setDate(start.getDate()-(days-1));
+            document.getElementById('harianStartDate').value = start.toISOString().split('T')[0];
+            document.getElementById('harianEndDate').value = end.toISOString().split('T')[0];
+            document.querySelectorAll('.quick-date-btn').forEach(b=>b.classList.remove('active'));
+            event.target.classList.add('active');
+            validateAndUpdateHarianChart();
+        }
+        function validateAndUpdateHarianChart(){
+            const s=document.getElementById('harianStartDate').value, e=document.getElementById('harianEndDate').value, err=document.getElementById('harianChartError');
+            if(!s||!e){ err.textContent='⚠️ Pilih tanggal mulai dan selesai.'; err.classList.add('show'); return; }
+            const diff=Math.floor((new Date(e)-new Date(s))/(86400000));
+            if(diff<0){ err.textContent='⚠️ Tanggal selesai tidak boleh lebih awal.'; err.classList.add('show'); return; }
+            if(diff<2){ err.textContent='⚠️ Rentang minimal 3 hari.'; err.classList.add('show'); return; }
+            if(diff>30){ err.textContent='⚠️ Rentang maksimal 1 bulan (31 hari).'; err.classList.add('show'); return; }
+            err.classList.remove('show'); updateHarianChart(s,e);
+        }
         function updateHarianChart(s,e){
-            const ctx=document.getElementById('harianChart').getContext('2d'); const labels=[], daily=[]; let curr=new Date(s), end=new Date(e), total=0, peak=0, peakDate='', daysWith=0;
-            while(curr<=end){ const d=curr.toISOString().split('T')[0]; labels.push(d); let dt=0; if(giftData[d]) Object.values(giftData[d]).forEach(u=>dt+=u.total); daily.push(dt); total+=dt; if(dt>0)daysWith++; if(dt>peak){peak=dt; peakDate=d;} curr.setDate(curr.getDate()+1); }
+            const ctx=document.getElementById('harianChart').getContext('2d');
+            const labels=[], daily=[];
+            let curr=new Date(s), end=new Date(e), total=0, peak=0, peakDate='', daysWith=0;
+            while(curr<=end){
+                const d=curr.toISOString().split('T')[0];
+                labels.push(d);
+                let dt=0;
+                if(giftData[d]) Object.values(giftData[d]).forEach(u=>dt+=u.total);
+                daily.push(dt);
+                total+=dt;
+                if(dt>0) daysWith++;
+                if(dt>peak){ peak=dt; peakDate=d; }
+                curr.setDate(curr.getDate()+1);
+            }
             const avg=daysWith?Math.round(total/daysWith):0;
             document.getElementById('harianSummaryInfo').style.display='flex';
-            document.getElementById('harianRangeInfo').textContent=`${formatDate(s)} - ${formatDate(e)}`; document.getElementById('harianTotalInfo').textContent=total.toLocaleString(); document.getElementById('harianAverageInfo').textContent=avg.toLocaleString(); document.getElementById('harianPeakInfo').textContent=`${peak.toLocaleString()} (${formatDate(peakDate)})`;
-            if(harianChart) harianChart.destroy(); harianChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Total Gift Harian',data:daily,backgroundColor:daily.map(v=>v===peak&&v>0?'rgba(245,158,11,0.8)':'rgba(99,102,241,0.7)'),borderColor:daily.map(v=>v===peak&&v>0?'#f59e0b':'#6366f1'),borderWidth:2,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false},tooltip:{callbacks:{title:(ctx)=>formatDate(ctx[0].label),label:(ctx)=>`Total Gift: ${ctx.parsed.y.toLocaleString()}`}}}}});
+            document.getElementById('harianRangeInfo').textContent=`${formatDate(s)} - ${formatDate(e)}`;
+            document.getElementById('harianTotalInfo').textContent=total.toLocaleString();
+            document.getElementById('harianAverageInfo').textContent=avg.toLocaleString();
+            document.getElementById('harianPeakInfo').textContent=`${peak.toLocaleString()} (${formatDate(peakDate)})`;
+            if(harianChart) harianChart.destroy();
+            harianChart=new Chart(ctx,{
+                type:'bar',
+                data:{
+                    labels,
+                    datasets:[{
+                        label:'Total Gift Harian',
+                        data:daily,
+                        backgroundColor:daily.map(v=>v===peak&&v>0?'rgba(245,158,11,0.8)':'rgba(99,102,241,0.7)'),
+                        borderColor:daily.map(v=>v===peak&&v>0?'#f59e0b':'#6366f1'),
+                        borderWidth:2,
+                        borderRadius:6
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    scales:{ y:{ beginAtZero:true } },
+                    plugins:{
+                        legend:{ display:false },
+                        tooltip:{ callbacks:{ title:(ctx)=>formatDate(ctx[0].label), label:(ctx)=>`Total Gift: ${ctx.parsed.y.toLocaleString()}` } }
+                    }
+                }
+            });
         }
-        function formatDate(dateStr){ return new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }
-        function resetData(){ if(confirm('Reset semua data?')){ localStorage.removeItem(`giftDataPro_${currentUser.email}`); giftData={}; renderTable(); if(currentUser.isAdmin) updateAdminStats(); alert('Data direset.'); } }
-        function escapeHtml(text){ const map={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}; return text.replace(/[&<>"']/g,m=>map[m]); }
+        function formatDate(dateStr){
+            return new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+        }
+        function resetData(){
+            if(confirm('Reset semua data?')){
+                localStorage.removeItem(`giftDataPro_${currentUser.email}`);
+                giftData={};
+                renderTable();
+                if(currentUser.isAdmin) updateAdminStats();
+                alert('Data direset.');
+            }
+        }
+        function escapeHtml(text){
+            const map={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+            return text.replace(/[&<>"']/g,m=>map[m]);
+        }
 
         // ============ ADMIN STATS ============
-        function updateAdminStats(){ const keys=Object.keys(localStorage).filter(k=>k.startsWith('giftDataPro_')); let users=keys.length, gift=0; const dates=new Set(); keys.forEach(k=>{ const d=JSON.parse(localStorage.getItem(k)); Object.keys(d).forEach(date=>{dates.add(date); Object.values(d[date]).forEach(u=>gift+=u.total);}); }); document.getElementById('adminTotalUsers').textContent=users; document.getElementById('adminTotalGift').textContent=gift.toLocaleString(); document.getElementById('adminTotalDates').textContent=dates.size; }
+        function updateAdminStats(){
+            const keys=Object.keys(localStorage).filter(k=>k.startsWith('giftDataPro_'));
+            let users=keys.length, gift=0;
+            const dates=new Set();
+            keys.forEach(k=>{
+                const d=JSON.parse(localStorage.getItem(k));
+                Object.keys(d).forEach(date=>{
+                    dates.add(date);
+                    Object.values(d[date]).forEach(u=>gift+=u.total);
+                });
+            });
+            document.getElementById('adminTotalUsers').textContent=users;
+            document.getElementById('adminTotalGift').textContent=gift.toLocaleString();
+            document.getElementById('adminTotalDates').textContent=dates.size;
+        }
 
         // ============ PROFILE ============
-        function loadProfile(){ const key=`profile_${currentUser.email}`; const p=JSON.parse(localStorage.getItem(key))||{}; document.getElementById('profileNama').value=p.nama||currentUser.name||''; document.getElementById('profileBio').value=p.bio||''; document.getElementById('profileEmail').value=p.email||currentUser.email||''; document.getElementById('profileWa').value=p.wa||''; document.getElementById('profileIg').value=p.ig||''; document.getElementById('profileTwitter').value=p.twitter||''; document.getElementById('profileLinkedin').value=p.linkedin||''; }
-        document.getElementById('profileForm').addEventListener('submit', function(e){ e.preventDefault(); const p={ nama:document.getElementById('profileNama').value, bio:document.getElementById('profileBio').value, email:document.getElementById('profileEmail').value, wa:document.getElementById('profileWa').value, ig:document.getElementById('profileIg').value, twitter:document.getElementById('profileTwitter').value, linkedin:document.getElementById('profileLinkedin').value }; localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(p)); alert('Profile tersimpan!'); });
+        function loadProfile(){
+            const key=`profile_${currentUser.email}`;
+            const p=JSON.parse(localStorage.getItem(key))||{};
+            document.getElementById('profileNama').value=p.nama||currentUser.name||'';
+            document.getElementById('profileBio').value=p.bio||'';
+            document.getElementById('profileEmail').value=p.email||currentUser.email||'';
+            document.getElementById('profileWa').value=p.wa||'';
+            document.getElementById('profileIg').value=p.ig||'';
+            document.getElementById('profileTwitter').value=p.twitter||'';
+            document.getElementById('profileLinkedin').value=p.linkedin||'';
+        }
+        document.getElementById('profileForm').addEventListener('submit', function(e){
+            e.preventDefault();
+            const p={
+                nama:document.getElementById('profileNama').value,
+                bio:document.getElementById('profileBio').value,
+                email:document.getElementById('profileEmail').value,
+                wa:document.getElementById('profileWa').value,
+                ig:document.getElementById('profileIg').value,
+                twitter:document.getElementById('profileTwitter').value,
+                linkedin:document.getElementById('profileLinkedin').value
+            };
+            localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(p));
+            alert('Profile tersimpan!');
+        });
 
         // ============ BERITA ============
-        async function loadBerita(){ const cnn=document.getElementById('beritaCNN'), detik=document.getElementById('beritaDetik'); cnn.innerHTML='Memuat...'; detik.innerHTML='Memuat...'; const rss2json='https://api.rss2json.com/v1/api.json?rss_url='; const feeds=[{url:'https://www.cnnindonesia.com/rss',el:cnn},{url:'https://rss.detik.com/index.php/detikcom',el:detik}]; for(const f of feeds){ try{ const res=await fetch(rss2json+encodeURIComponent(f.url)); const data=await res.json(); if(data.status==='ok'){ f.el.innerHTML=data.items.slice(0,10).map(item=>`<a href="${item.link}" target="_blank">${item.title}</a>`).join(''); } else f.el.innerHTML='Gagal memuat.'; } catch(err){ f.el.innerHTML='Gagal memuat berita.'; } } }
+        async function loadBerita(){
+            const cnn=document.getElementById('beritaCNN'), detik=document.getElementById('beritaDetik');
+            cnn.innerHTML='Memuat...'; detik.innerHTML='Memuat...';
+            const rss2json='https://api.rss2json.com/v1/api.json?rss_url=';
+            const feeds=[
+                {url:'https://www.cnnindonesia.com/rss',el:cnn},
+                {url:'https://rss.detik.com/index.php/detikcom',el:detik}
+            ];
+            for(const f of feeds){
+                try{
+                    const res=await fetch(rss2json+encodeURIComponent(f.url));
+                    const data=await res.json();
+                    if(data.status==='ok'){
+                        f.el.innerHTML=data.items.slice(0,10).map(item=>`<a href="${item.link}" target="_blank">${item.title}</a>`).join('');
+                    } else f.el.innerHTML='Gagal memuat.';
+                } catch(err){ f.el.innerHTML='Gagal memuat berita.'; }
+            }
+        }
 
         // ============ TOOLS: EXCEL ============
-        async function compileExcel(){ const files=document.getElementById('excelFiles').files; const result=document.getElementById('excelResult'); if(!files.length){ result.innerHTML='<p style="color:#fca5a5;">Pilih file Excel terlebih dahulu.</p>'; return; } const wb=XLSX.utils.book_new(); const allData=[]; for(const file of files){ const data=await file.arrayBuffer(); const wbIn=XLSX.read(data); wbIn.SheetNames.forEach(sheet=>{ const ws=wbIn.Sheets[sheet]; const rows=XLSX.utils.sheet_to_json(ws,{header:1}); allData.push(...rows); }); } const wsOut=XLSX.utils.aoa_to_sheet(allData); XLSX.utils.book_append_sheet(wb, wsOut, 'Gabungan'); XLSX.writeFile(wb, 'gabungan_excel.xlsx'); result.innerHTML='<p style="color:#34d399;">File berhasil digabungkan! Unduhan dimulai.</p>'; }
+        async function compileExcel(){
+            const files=document.getElementById('excelFiles').files;
+            const result=document.getElementById('excelResult');
+            if(!files.length){ result.innerHTML='<p style="color:#fca5a5;">Pilih file Excel terlebih dahulu.</p>'; return; }
+            const wb=XLSX.utils.book_new();
+            const allData=[];
+            for(const file of files){
+                const data=await file.arrayBuffer();
+                const wbIn=XLSX.read(data);
+                wbIn.SheetNames.forEach(sheet=>{
+                    const ws=wbIn.Sheets[sheet];
+                    const rows=XLSX.utils.sheet_to_json(ws,{header:1});
+                    allData.push(...rows);
+                });
+            }
+            const wsOut=XLSX.utils.aoa_to_sheet(allData);
+            XLSX.utils.book_append_sheet(wb, wsOut, 'Gabungan');
+            XLSX.writeFile(wb, 'gabungan_excel.xlsx');
+            result.innerHTML='<p style="color:#34d399;">File berhasil digabungkan! Unduhan dimulai.</p>';
+        }
 
         // ============ TOOLS: CURRENCY ============
-        async function loadCurrency(){ const div=document.getElementById('currencyResult'); div.innerHTML='Memuat...'; try{ const res=await fetch('https://open.er-api.com/v6/latest/USD'); const data=await res.json(); if(data.result==='success'){ const rates=data.rates; const currencies=['USD','IDR','EUR','GBP','JPY','SGD','MYR','CNY','AUD','INR']; let html='<table><tr><th>Mata Uang</th><th>Nilai (thd USD)</th></tr>'; currencies.forEach(c=>{ if(rates[c]) html+=`<tr><td>${c}</td><td>${rates[c].toLocaleString()}</td></tr>`; }); html+='</table><p style="margin-top:10px;font-size:12px;color:var(--muted);">Sumber: open.er-api.com</p>'; div.innerHTML=html; } else div.innerHTML='Gagal memuat data kurs.'; } catch(err){ div.innerHTML='Gagal memuat data kurs.'; } }
+        async function loadCurrency(){
+            const div=document.getElementById('currencyResult');
+            div.innerHTML='Memuat...';
+            try{
+                const res=await fetch('https://open.er-api.com/v6/latest/USD');
+                const data=await res.json();
+                if(data.result==='success'){
+                    const rates=data.rates;
+                    const currencies=['USD','IDR','EUR','GBP','JPY','SGD','MYR','CNY','AUD','INR'];
+                    let html='<table><tr><th>Mata Uang</th><th>Nilai (thd USD)</th></tr>';
+                    currencies.forEach(c=>{ if(rates[c]) html+=`<tr><td>${c}</td><td>${rates[c].toLocaleString()}</td></tr>`; });
+                    html+='</table><p style="margin-top:10px;font-size:12px;color:var(--muted);">Sumber: open.er-api.com</p>';
+                    div.innerHTML=html;
+                } else div.innerHTML='Gagal memuat data kurs.';
+            } catch(err){ div.innerHTML='Gagal memuat data kurs.'; }
+        }
 
         // ============ TOOLS: JELAJAH ============
-        function loadJelajah(){ const q=document.getElementById('jelajahQuery').value.trim()||'tempat wisata terbaik Indonesia'; const div=document.getElementById('jelajahResult'); div.innerHTML=`<iframe src="https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed" style="width:100%;height:100%;border:0;" loading="lazy"></iframe>`; }
+        function loadJelajah(){
+            const q=document.getElementById('jelajahQuery').value.trim()||'tempat wisata terbaik Indonesia';
+            const div=document.getElementById('jelajahResult');
+            div.innerHTML=`<iframe src="https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed" style="width:100%;height:100%;border:0;" loading="lazy"></iframe>`;
+        }
 
         // ============ INIT ============
         checkExistingSession();
