@@ -4,635 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yadoru Barter Apps - Pro Edition</title>
-    <!-- Library OCR Tesseract.js & Chart.js -->
+    <!-- Library OCR, Chart.js, SheetJS, Google Identity -->
     <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Identity Services -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        :root { 
-            --primary-color: #6366f1; 
+        :root {
+            --primary-color: #6366f1;
             --primary-hover: #4f46e5;
-            --bg-color: #f8fafc; 
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-color: #0f172a;
             --muted-color: #64748b;
             --border-color: #e2e8f0;
             --danger-color: #ef4444;
-            --danger-hover: #dc2626;
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --admin-color: #8b5cf6;
         }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body { 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
-            background-color: var(--bg-color); 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 20px; 
+            padding: 20px;
             min-height: 100vh;
         }
-        
-        /* Login Overlay Styles */
+        /* Login Overlay */
         #loginOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-            overflow-y: auto;
-            padding: 20px;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 0.5s ease, visibility 0.5s ease;
+            overflow-y: auto; padding: 20px;
         }
-        #loginOverlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
+        #loginOverlay.hidden { opacity: 0; visibility: hidden; }
         .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            text-align: center;
-            max-width: 450px;
-            width: 100%;
-            animation: slideUp 0.6s ease;
-        }
-        @keyframes slideUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        .login-container h2 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        .login-container p {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        
-        /* Login Tabs */
-        .login-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 25px;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: 8px;
-        }
-        .login-tab-btn {
-            flex: 1;
-            padding: 10px;
-            cursor: pointer;
-            border: none;
-            border-radius: 6px;
-            background: transparent;
-            color: #64748b;
-            font-weight: 600;
-            font-size: 13px;
-            transition: all 0.25s ease;
-        }
-        .login-tab-btn.active {
-            background: white;
-            color: #6366f1;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .login-tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        .login-tab-content.active {
-            display: block;
-        }
-        
-        .google-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 50px;
-            padding: 12px 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 15px;
-        }
-        .google-btn:hover {
-            background: #f8f9fa;
-            border-color: #6366f1;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
-            transform: translateY(-2px);
-        }
-        .google-btn img {
-            width: 20px;
-            height: 20px;
-        }
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 20px 0;
-            color: #999;
-            font-size: 12px;
-        }
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .divider::before {
-            margin-right: 15px;
-        }
-        .divider::after {
-            margin-left: 15px;
-        }
-        .email-input, .password-input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 50px;
-            font-size: 15px;
-            margin-bottom: 15px;
-            transition: border-color 0.3s;
-        }
-        .email-input:focus, .password-input:focus {
-            outline: none;
-            border-color: #6366f1;
-        }
-        .email-login-btn, .admin-login-btn {
-            width: 100%;
-            padding: 12px 20px;
-            background: #6366f1;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .email-login-btn:hover {
-            background: #4f46e5;
-        }
-        .admin-login-btn {
-            background: #8b5cf6;
-        }
-        .admin-login-btn:hover {
-            background: #7c3aed;
-        }
-        .login-error {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 13px;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        .login-error.show {
-            display: block;
-        }
-        .admin-badge {
-            display: inline-block;
-            background: #8b5cf6;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-        
-        /* User Info Bar */
-        .user-info-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 15px 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .user-info-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .user-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            border: 2px solid #6366f1;
-        }
-        .user-avatar.admin-avatar {
-            border-color: #8b5cf6;
-        }
-        .user-name {
-            font-weight: 600;
-            color: #333;
-            font-size: 16px;
-        }
-        .user-email {
-            font-size: 12px;
-            color: #666;
-        }
-        .logout-btn {
-            padding: 8px 16px;
-            background: #fee2e2;
-            color: #dc2626;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
-        .logout-btn:hover {
-            background: #fecaca;
-        }
-        
-        /* Admin Panel Styles */
-        .admin-panel {
-            background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
-            border: 2px solid #8b5cf6;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        .admin-panel-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .admin-panel-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #7c3aed;
-        }
-        .admin-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        .admin-stat-card {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .admin-stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #7c3aed;
-        }
-        .admin-stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .container { 
-            max-width: 1100px; 
-            margin: 0 auto; 
-            background: var(--card-bg); 
-            padding: 35px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-        }
-        h2 {
-            margin-top: 0;
-            text-align: center;
-            color: var(--primary-color);
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        .nav-tabs { 
-            display: flex; 
-            gap: 8px; 
-            margin-bottom: 25px; 
-            background: #f1f5f9;
-            padding: 6px;
-            border-radius: 10px;
-            flex-wrap: wrap;
-        }
-        .tab-btn { 
-            flex: 1;
-            min-width: 120px;
-            padding: 12px; 
-            cursor: pointer; 
-            border: none; 
-            border-radius: 8px; 
-            background-color: transparent;
-            color: var(--muted-color);
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.25s ease;
-        }
-        .tab-btn:hover {
-            color: var(--text-color);
-        }
-        .tab-btn.active { 
-            background: var(--card-bg); 
-            color: var(--primary-color);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-        .tab-content { 
-            display: none; 
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        .tab-content.active { 
-            display: block; 
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        input[type="text"], input[type="number"], input[type="file"], input[type="date"], select {
-            width: 100%;
-            padding: 11px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 15px;
-            box-sizing: border-box;
-            background: #fff;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
-        button[type="submit"], .btn-primary, .btn-danger, .btn-secondary {
-            border: none;
-            padding: 12px 16px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        button[type="submit"], .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-            width: 100%;
-        }
-        button[type="submit"]:hover, .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: white;
-        }
-        .btn-danger:hover {
-            background-color: var(--danger-hover);
-        }
-        .btn-secondary {
-            background-color: #e2e8f0;
-            color: #334155;
-        }
-        .btn-secondary:hover {
-            background-color: #cbd5e1;
-        }
-        
-        /* Metric Summary Cards */
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .card-metric {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .card-metric span {
-            font-size: 12px;
-            color: var(--muted-color);
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .card-metric h3 {
-            margin: 5px 0 0 0;
-            font-size: 20px;
-            color: var(--primary-color);
-        }
-        
-        /* Chart Container Styles */
-        .chart-container {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .chart-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #333;
-        }
-        .chart-subtitle {
-            font-size: 13px;
-            color: #666;
-            margin-top: 4px;
-        }
-        .chart-legend-info {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: #555;
-        }
-        .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-        
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 10px; 
-        }
-        th, td { 
-            padding: 14px 12px; 
-            border-bottom: 1px solid var(--border-color); 
-            text-align: left; 
-            font-size: 14px;
-        }
-        th {
-            background-color: #f8fafc;
-            font-weight: 600;
-            color: #475569;
-            cursor: pointer;
-            user-select: none;
-            transition: background-color 0.2s;
-        }
-        th:hover {
-            background-color: #f1f5f9;
-        }
-        th span {
-            float: right;
-            color: var(--muted-color);
-            font-size: 12px;
-        }
-        .empty-row, .loading { 
-            text-align: center; 
-            color: var(--muted-color); 
-            font-style: italic; 
-            padding: 30px;
-        }
-        .grand-total-row {
-            background-color: #eef2ff !important;
-            font-weight: bold;
-        }
-        .report-controls, .chart-controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        /* Quick Date Range Buttons */
-        .quick-date-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-        .quick-date-btn {
-            padding: 6px 12px;
-            background: white;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            color: #4b5563;
-            transition: all 0.2s;
-        }
-        .quick-date-btn:hover {
-            background: #f3f4f6;
-            border-color: #6366f1;
-            color: #6366f1;
-        }
-        .quick-date-btn.active {
-            background: #6366f1;
-            color: white;
-            border-color: #6366f1;
-        }
-        
-        /* Error/Warning Message */
-        .error-message {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            display: none;
-        }
-        .error-message.show {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        
+            background: white; padding: 40px; border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;
+            max-width: 450px; width: 100%; animation: slideUp 0.6s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .login-tabs { display: flex; gap: 8px; margin-bottom: 25px; background: #f1f5f9; padding: 4px; border-radius: 8px; }
+        .login-tab-btn { flex: 1; padding: 10px; cursor: pointer; border: none; border-radius: 6px; background: transparent; color: #64748b; font-weight: 600; font-size: 13px; transition: all 0.25s; }
+        .login-tab-btn.active { background: white; color: #6366f1; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .login-tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .login-tab-content.active { display: block; }
+        .google-btn, .email-login-btn, .admin-login-btn { width: 100%; padding: 12px 20px; border: none; border-radius: 50px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-bottom: 10px; }
+        .google-btn { background: white; border: 2px solid #e0e0e0; color: #333; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .google-btn:hover { background: #f8f9fa; border-color: #6366f1; }
+        .email-login-btn { background: #6366f1; color: white; }
+        .email-login-btn:hover { background: #4f46e5; }
+        .admin-login-btn { background: #8b5cf6; color: white; }
+        .admin-login-btn:hover { background: #7c3aed; }
+        .login-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; display: none; }
+        .login-error.show { display: block; animation: fadeIn 0.3s ease; }
+        .admin-badge { display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px; vertical-align: middle; }
+        /* Main Nav */
+        .main-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: white; padding: 10px 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .nav-btn { padding: 10px 16px; cursor: pointer; border: none; border-radius: 8px; background: transparent; color: #64748b; font-weight: 600; font-size: 14px; transition: all 0.25s; }
+        .nav-btn:hover, .nav-btn.active { background: #f1f5f9; color: #6366f1; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; background: white; min-width: 220px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 8px; z-index: 100; margin-top: 5px; }
+        .dropdown-content .nav-btn { display: block; width: 100%; text-align: left; }
+        .dropdown:hover .dropdown-content { display: block; }
+        /* Container & Sections */
+        .main-container { max-width: 1100px; margin: 0 auto; }
+        .app-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .app-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { color: var(--primary-color); font-size: 24px; font-weight: 800; margin-bottom: 20px; text-align: center; }
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 25px; background: #f1f5f9; padding: 6px; border-radius: 10px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; min-width: 120px; padding: 12px; cursor: pointer; border: none; border-radius: 8px; background: transparent; color: var(--muted-color); font-weight: 600; font-size: 14px; transition: all 0.25s; }
+        .tab-btn.active { background: white; color: var(--primary-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+        input[type="text"], input[type="number"], input[type="file"], input[type="date"], input[type="email"], input[type="password"], input[type="url"], select { width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; background: #fff; transition: border-color 0.2s, box-shadow 0.2s; }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+        button[type="submit"], .btn-primary, .btn-danger, .btn-secondary { border: none; padding: 12px 16px; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; width: auto; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-danger { background: var(--danger-color); color: white; }
+        .btn-secondary { background: #e2e8f0; color: #334155; }
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .card-metric { background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; text-align: center; }
+        .card-metric span { font-size: 12px; color: var(--muted-color); font-weight: 600; text-transform: uppercase; }
+        .card-metric h3 { margin: 5px 0 0; font-size: 20px; color: var(--primary-color); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 14px 12px; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 14px; }
+        th { background: #f8fafc; cursor: pointer; user-select: none; }
+        .grand-total-row { background: #eef2ff !important; font-weight: bold; }
+        .chart-container { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .error-message { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: none; }
+        .error-message.show { display: block; }
+        .admin-panel { background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%); border: 2px solid #8b5cf6; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .admin-stat-card { background: white; border-radius: 8px; padding: 15px; text-align: center; }
+        .admin-stat-value { font-size: 24px; font-weight: 700; color: #7c3aed; }
+        .quick-date-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        .quick-date-btn { padding: 6px 12px; background: white; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #4b5563; }
+        .quick-date-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
         @media (max-width: 768px) {
-            .user-info-bar {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .container {
-                padding: 20px;
-            }
-            .report-controls, .chart-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .chart-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .nav-tabs {
-                flex-direction: column;
-            }
-            .login-tabs {
-                flex-direction: column;
-            }
+            .main-nav { flex-direction: column; align-items: stretch; }
+            .dropdown-content { position: static; box-shadow: none; }
         }
     </style>
 </head>
@@ -642,1107 +120,449 @@
         <div class="login-container">
             <h2>🔐 Selamat Datang</h2>
             <p>Yadoru Barter Apps - Pro Edition</p>
-            
-            <!-- Login Error Message -->
             <div id="loginError" class="login-error"></div>
-            
-            <!-- Login Tabs -->
             <div class="login-tabs">
                 <button class="login-tab-btn active" onclick="switchLoginTab('user')">User</button>
                 <button class="login-tab-btn" onclick="switchLoginTab('admin')">Admin</button>
             </div>
-            
-            <!-- User Login Tab -->
             <div id="userLoginTab" class="login-tab-content active">
-                <!-- Google Sign-In Button -->
                 <button class="google-btn" onclick="handleGoogleLogin()">
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                     Masuk dengan Google
                 </button>
-                
-                <div class="divider">ATAU</div>
-                
-                <!-- Email Login Form -->
-                <input type="email" id="emailInput" class="email-input" placeholder="Masukkan email Anda">
+                <div style="margin: 15px 0; color: #999;">ATAU</div>
+                <input type="email" id="emailInput" class="email-input" placeholder="Masukkan email Anda" style="margin-bottom: 10px;">
                 <button class="email-login-btn" onclick="handleEmailLogin()">Masuk dengan Email</button>
             </div>
-            
-            <!-- Admin Login Tab -->
             <div id="adminLoginTab" class="login-tab-content">
                 <div style="text-align: center; margin-bottom: 20px;">
                     <div style="font-size: 40px; margin-bottom: 10px;">👑</div>
                     <p style="color: #666; font-size: 13px;">Login khusus administrator</p>
                 </div>
-                
-                <input type="text" id="adminUsername" class="email-input" placeholder="Username Admin" autocomplete="off">
-                <input type="password" id="adminPassword" class="password-input" placeholder="Password" autocomplete="off">
+                <input type="text" id="adminUsername" class="email-input" placeholder="Username Admin" autocomplete="off" style="margin-bottom: 10px;">
+                <input type="password" id="adminPassword" class="password-input" placeholder="Password" autocomplete="off" style="margin-bottom: 10px;">
                 <button class="admin-login-btn" onclick="handleAdminLogin()">Masuk sebagai Admin</button>
             </div>
         </div>
     </div>
-    
-    <!-- Main App Container (Hidden until login) -->
+
+    <!-- Main App -->
     <div id="mainApp" style="display: none;">
-        <!-- User Info Bar -->
-        <div class="user-info-bar">
-            <div class="user-info-left">
-                <img id="userAvatar" class="user-avatar" src="" alt="Avatar" style="display: none;">
-                <div>
-                    <div class="user-name" id="userName">
-                        Pengguna
-                        <span id="adminBadge" class="admin-badge" style="display: none;">ADMIN</span>
-                    </div>
-                    <div class="user-email" id="userEmail"></div>
-                </div>
-            </div>
-            <button class="logout-btn" onclick="handleLogout()">Keluar</button>
-        </div>
-        
-        <!-- Admin Panel (Only visible for admin) -->
-        <div id="adminPanel" class="admin-panel" style="display: none;">
-            <div class="admin-panel-header">
-                <span style="font-size: 24px;">👑</span>
-                <span class="admin-panel-title">Panel Administrator</span>
-            </div>
-            <div class="admin-stats">
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value" id="adminTotalUsers">0</div>
-                    <div class="admin-stat-label">Total Pengguna</div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value" id="adminTotalGift">0</div>
-                    <div class="admin-stat-label">Total Gift Keseluruhan</div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value" id="adminTotalDates">0</div>
-                    <div class="admin-stat-label">Total Tanggal Aktif</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="container">
-            <h2>Yadoru Apps</h2>
-            <div class="nav-tabs">
-                <button class="tab-btn active" onclick="switchTab('input')">Input & Scan</button>
-                <button class="tab-btn" onclick="switchTab('report')">Report List & Waktu</button>
-                <button class="tab-btn" onclick="switchTab('grafik')">Grafik Per User</button>
-                <button class="tab-btn" onclick="switchTab('grafikHarian')">Grafik Akumulasi Harian</button>
-            </div>
-            
-            <!-- Tab 1: Input & Scan Screenshot -->
-            <div id="inputTab" class="tab-content active">
-                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; border: 2px dashed var(--border-color); margin-bottom: 25px; text-align: center;">
-                    <label for="screenshotInput" style="color: var(--primary-color); cursor: pointer; font-size: 15px; font-weight: 700;">📷 Upload Screenshot Riwayat Gift (Auto-Scan OCR)</label>
-                    <p style="margin: 5px 0 12px 0; font-size: 13px; color: var(--muted-color);">Pilih gambar screenshot untuk membaca data secara otomatis.</p>
-                    <input type="file" id="screenshotInput" accept="image/*" style="display: none;">
-                    <button type="button" class="btn-secondary" onclick="document.getElementById('screenshotInput').click()" style="width: auto; padding: 8px 16px; font-size: 14px;">Pilih Berkas Gambar</button>
-                    <div id="loadingText" class="loading" style="display:none; margin-top: 10px;">Sedang membaca teks dari gambar... Harap tunggu sebentar.</div>
-                </div>
-
-                <form id="giftForm">
-                    <div class="form-group">
-                        <label for="inputDate">Tanggal Transaksi / Input</label>
-                        <input type="date" id="inputDate" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nama">Nama Subject</label>
-                        <input type="text" id="nama" placeholder="Contoh: Zaki" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label for="jumlah">Jumlah Gift</label>
-                        <input type="number" id="jumlah" placeholder="Contoh: 9000" min="1" required>
-                    </div>
-                    <button type="submit">Simpan & Akumulasi Data</button>
-                </form>
-            </div>
-
-            <!-- Tab 2: Report List -->
-            <div id="reportTab" class="tab-content">
-                <div class="summary-cards">
-                    <div class="card-metric">
-                        <span id="labelStatGift">Total Keseluruhan Gift</span>
-                        <h3 id="statTotalGift">0</h3>
-                    </div>
-                    <div class="card-metric">
-                        <span id="labelStatSubject">Jumlah Subject Aktif</span>
-                        <h3 id="statTotalSubject">0</h3>
-                    </div>
-                </div>
-
-                <div class="report-controls">
-                    <div style="flex: 1; min-width: 180px;">
-                        <label for="filterDate">Filter Tanggal:</label>
-                        <input type="date" id="filterDate" onchange="renderTable()">
-                    </div>
-                    <div style="flex: 1; min-width: 180px;">
-                        <label for="searchNama">Cari Subject:</label>
-                        <input type="text" id="searchNama" placeholder="Ketik nama..." onkeyup="renderTable()">
-                    </div>
-                    <div style="flex: 1; min-width: 180px;">
-                        <label for="sortSelect">Urutkan:</label>
-                        <select id="sortSelect" onchange="renderTable()">
-                            <option value="name_asc">Nama (A-Z)</option>
-                            <option value="name_desc">Nama (Z-A)</option>
-                            <option value="total_desc">Total Gift (Tertinggi)</option>
-                            <option value="total_asc">Total Gift (Terendah)</option>
-                            <option value="time_desc">Waktu (Terbaru)</option>
-                            <option value="time_asc">Waktu (Terlama)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <button type="button" class="btn-secondary" onclick="resetDateFilter()" style="padding: 11px 14px; font-size: 14px;">Semua Tanggal</button>
-                    </div>
-                </div>
-
-                <table id="reportTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">No</th>
-                            <th onclick="toggleSortColumn('name')">Nama Subject <span id="sort-icon-name">↕</span></th>
-                            <th onclick="toggleSortColumn('time')">Waktu Input Terakhir <span id="sort-icon-time">↕</span></th>
-                            <th onclick="toggleSortColumn('total')">Total Gift <span id="sort-icon-total">↕</span></th>
-                        </tr>
-                    </thead>
-                    <tbody id="giftTableBody">
-                        <tr><td colspan="4" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>
-                    </tbody>
-                </table>
-
-                <div class="action-bar">
-                    <button type="button" class="btn-secondary" onclick="exportToCSV()" style="width: auto;">📥 Ekspor ke CSV</button>
-                    <button type="button" class="btn-danger" onclick="resetData()" style="width: auto;">🗑️ Reset Semua Data</button>
-                </div>
-            </div>
-
-            <!-- Tab 3: Grafik Per User -->
-            <div id="grafikTab" class="tab-content">
-                <div class="chart-controls">
-                    <div style="flex: 1;">
-                        <label for="startDate">Mulai Tanggal:</label>
-                        <input type="date" id="startDate" onchange="validateAndUpdateCharts()">
-                    </div>
-                    <div style="flex: 1;">
-                        <label for="endDate">Sampai Tanggal:</label>
-                        <input type="date" id="endDate" onchange="validateAndUpdateCharts()">
-                    </div>
-                </div>
-                <div id="chartError" class="error-message"></div>
-                <div style="position: relative; height: 400px;">
-                    <canvas id="giftChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Tab 4: Grafik Akumulasi Gift Harian -->
-            <div id="grafikHarianTab" class="tab-content">
-                <div class="chart-container">
-                    <div class="chart-header">
+        <div class="main-container">
+            <!-- User Info & Navbar -->
+            <div class="card" style="padding: 15px 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img id="userAvatar" class="user-avatar" src="" alt="Avatar" style="display: none; width: 45px; height: 45px; border-radius: 50%; border: 2px solid #6366f1;">
                         <div>
-                            <div class="chart-title">📊 Grafik Akumulasi Gift Per Hari</div>
-                            <div class="chart-subtitle">Total akumulasi gift harian dalam rentang tanggal tertentu</div>
+                            <div class="user-name" id="userName">Pengguna <span id="adminBadge" class="admin-badge" style="display: none;">ADMIN</span></div>
+                            <div class="user-email" id="userEmail" style="font-size: 12px; color: #666;"></div>
                         </div>
                     </div>
-                    
-                    <div class="quick-date-buttons">
-                        <button class="quick-date-btn active" onclick="setQuickDateRange(7, event)">7 Hari</button>
-                        <button class="quick-date-btn" onclick="setQuickDateRange(14, event)">14 Hari</button>
-                        <button class="quick-date-btn" onclick="setQuickDateRange(21, event)">21 Hari</button>
-                        <button class="quick-date-btn" onclick="setQuickDateRange(30, event)">30 Hari</button>
+                    <button class="logout-btn btn-danger" onclick="handleLogout()" style="padding: 8px 16px; font-size: 13px;">Keluar</button>
+                </div>
+            </div>
+            <!-- Main Navigation -->
+            <nav class="main-nav">
+                <button class="nav-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
+                <button class="nav-btn" onclick="showSection('profile')">👤 Profile</button>
+                <button class="nav-btn" onclick="showSection('berita')">📰 Berita</button>
+                <div class="dropdown">
+                    <button class="nav-btn">🧰 Tools & Magic ▾</button>
+                    <div class="dropdown-content">
+                        <button class="nav-btn" onclick="showSection('toolsExcel')">📑 Excel Compiler</button>
+                        <button class="nav-btn" onclick="showSection('toolsCurrency')">💱 Currency</button>
+                        <button class="nav-btn" onclick="showSection('toolsJelajah')">🗺️ Jelajah Wisata</button>
                     </div>
-                    
-                    <div class="chart-controls">
-                        <div style="flex: 1; min-width: 180px;">
-                            <label for="harianStartDate">Mulai Tanggal:</label>
-                            <input type="date" id="harianStartDate" onchange="validateAndUpdateHarianChart()">
+                </div>
+            </nav>
+            <!-- Admin Panel -->
+            <div id="adminPanel" class="admin-panel" style="display: none;">
+                <div style="font-size: 18px; font-weight: 700; color: #7c3aed; margin-bottom: 15px;">👑 Panel Administrator</div>
+                <div class="admin-stats">
+                    <div class="admin-stat-card"><div class="admin-stat-value" id="adminTotalUsers">0</div><div class="admin-stat-label">Total Pengguna</div></div>
+                    <div class="admin-stat-card"><div class="admin-stat-value" id="adminTotalGift">0</div><div class="admin-stat-label">Total Gift Keseluruhan</div></div>
+                    <div class="admin-stat-card"><div class="admin-stat-value" id="adminTotalDates">0</div><div class="admin-stat-label">Total Tanggal Aktif</div></div>
+                </div>
+            </div>
+
+            <!-- ===================== DASHBOARD SECTION ===================== -->
+            <div id="dashboard" class="app-section active">
+                <div class="card">
+                    <h2>Yadoru Apps</h2>
+                    <div class="nav-tabs">
+                        <button class="tab-btn active" onclick="switchTab('input')">Input & Scan</button>
+                        <button class="tab-btn" onclick="switchTab('report')">Report List</button>
+                        <button class="tab-btn" onclick="switchTab('grafik')">Grafik Per User</button>
+                        <button class="tab-btn" onclick="switchTab('grafikHarian')">Grafik Harian</button>
+                    </div>
+                    <!-- Tab Input -->
+                    <div id="inputTab" class="tab-content active">
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; border: 2px dashed var(--border-color); margin-bottom: 25px; text-align: center;">
+                            <label for="screenshotInput" style="color: var(--primary-color); cursor: pointer; font-size: 15px; font-weight: 700;">📷 Upload Screenshot Riwayat Gift (Auto-Scan OCR)</label>
+                            <p style="margin: 5px 0 12px 0; font-size: 13px; color: var(--muted-color);">Pilih gambar screenshot untuk membaca data secara otomatis.</p>
+                            <input type="file" id="screenshotInput" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('screenshotInput').click()" style="width: auto; padding: 8px 16px; font-size: 14px;">Pilih Berkas Gambar</button>
+                            <div id="loadingText" class="loading" style="display:none; margin-top: 10px;">Sedang membaca teks dari gambar...</div>
                         </div>
-                        <div style="flex: 1; min-width: 180px;">
-                            <label for="harianEndDate">Sampai Tanggal:</label>
-                            <input type="date" id="harianEndDate" onchange="validateAndUpdateHarianChart()">
+                        <form id="giftForm">
+                            <div class="form-group"><label for="inputDate">Tanggal Transaksi / Input</label><input type="date" id="inputDate" required></div>
+                            <div class="form-group"><label for="nama">Nama Subject</label><input type="text" id="nama" placeholder="Contoh: Zaki" required></div>
+                            <div class="form-group"><label for="jumlah">Jumlah Gift</label><input type="number" id="jumlah" placeholder="Contoh: 9000" min="1" required></div>
+                            <button type="submit" class="btn-primary">Simpan & Akumulasi Data</button>
+                        </form>
+                    </div>
+                    <!-- Tab Report -->
+                    <div id="reportTab" class="tab-content">
+                        <div class="summary-cards">
+                            <div class="card-metric"><span id="labelStatGift">Total Keseluruhan Gift</span><h3 id="statTotalGift">0</h3></div>
+                            <div class="card-metric"><span id="labelStatSubject">Jumlah Subject Aktif</span><h3 id="statTotalSubject">0</h3></div>
                         </div>
-                        <div>
-                            <button type="button" class="btn-primary" onclick="validateAndUpdateHarianChart()" style="width: auto; padding: 11px 20px;">🔄 Update Grafik</button>
+                        <div class="report-controls" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+                            <div style="flex:1; min-width:180px;"><label for="filterDate">Filter Tanggal:</label><input type="date" id="filterDate" onchange="renderTable()"></div>
+                            <div style="flex:1; min-width:180px;"><label for="searchNama">Cari Subject:</label><input type="text" id="searchNama" placeholder="Ketik nama..." onkeyup="renderTable()"></div>
+                            <div style="flex:1; min-width:180px;"><label for="sortSelect">Urutkan:</label><select id="sortSelect" onchange="renderTable()"><option value="name_asc">Nama (A-Z)</option><option value="name_desc">Nama (Z-A)</option><option value="total_desc">Total Gift (Tertinggi)</option><option value="total_asc">Total Gift (Terendah)</option><option value="time_desc">Waktu (Terbaru)</option><option value="time_asc">Waktu (Terlama)</option></select></div>
+                            <div><button class="btn-secondary" onclick="resetDateFilter()" style="padding:11px 14px;">Semua Tanggal</button></div>
+                        </div>
+                        <table><thead><tr><th>No</th><th onclick="toggleSortColumn('name')">Nama Subject <span id="sort-icon-name">↕</span></th><th onclick="toggleSortColumn('time')">Waktu Input Terakhir <span id="sort-icon-time">↕</span></th><th onclick="toggleSortColumn('total')">Total Gift <span id="sort-icon-total">↕</span></th></tr></thead><tbody id="giftTableBody"><tr><td colspan="4" class="empty-row">Belum ada data gift.</td></tr></tbody></table>
+                        <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+                            <button class="btn-secondary" onclick="exportToCSV()">📥 Ekspor ke CSV</button>
+                            <button class="btn-danger" onclick="resetData()">🗑️ Reset Semua Data</button>
                         </div>
                     </div>
-                    
-                    <div id="harianChartError" class="error-message"></div>
-                    
-                    <div class="chart-legend-info" id="harianSummaryInfo" style="display: none;">
-                        <div class="legend-item">
-                            <span>📅 Rentang:</span>
-                            <strong id="harianRangeInfo"></strong>
+                    <!-- Tab Grafik Per User -->
+                    <div id="grafikTab" class="tab-content">
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                            <div style="flex:1;"><label for="startDate">Mulai Tanggal:</label><input type="date" id="startDate" onchange="validateAndUpdateCharts()"></div>
+                            <div style="flex:1;"><label for="endDate">Sampai Tanggal:</label><input type="date" id="endDate" onchange="validateAndUpdateCharts()"></div>
                         </div>
-                        <div class="legend-item">
-                            <span>💰 Total Akumulasi:</span>
-                            <strong id="harianTotalInfo" style="color: #6366f1;"></strong>
-                        </div>
-                        <div class="legend-item">
-                            <span>📈 Rata-rata Harian:</span>
-                            <strong id="harianAverageInfo" style="color: #10b981;"></strong>
-                        </div>
-                        <div class="legend-item">
-                            <span>🔝 Hari Tertinggi:</span>
-                            <strong id="harianPeakInfo" style="color: #f59e0b;"></strong>
+                        <div id="chartError" class="error-message"></div>
+                        <div style="position:relative; height:400px;"><canvas id="giftChart"></canvas></div>
+                    </div>
+                    <!-- Tab Grafik Harian -->
+                    <div id="grafikHarianTab" class="tab-content">
+                        <div class="chart-container">
+                            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                                <div><strong>📊 Grafik Akumulasi Gift Per Hari</strong></div>
+                            </div>
+                            <div class="quick-date-buttons">
+                                <button class="quick-date-btn active" onclick="setQuickDateRange(7, event)">7 Hari</button>
+                                <button class="quick-date-btn" onclick="setQuickDateRange(14, event)">14 Hari</button>
+                                <button class="quick-date-btn" onclick="setQuickDateRange(21, event)">21 Hari</button>
+                                <button class="quick-date-btn" onclick="setQuickDateRange(30, event)">30 Hari</button>
+                            </div>
+                            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:15px;">
+                                <div style="flex:1;"><label for="harianStartDate">Mulai Tanggal:</label><input type="date" id="harianStartDate" onchange="validateAndUpdateHarianChart()"></div>
+                                <div style="flex:1;"><label for="harianEndDate">Sampai Tanggal:</label><input type="date" id="harianEndDate" onchange="validateAndUpdateHarianChart()"></div>
+                                <div><button class="btn-primary" onclick="validateAndUpdateHarianChart()">🔄 Update Grafik</button></div>
+                            </div>
+                            <div id="harianChartError" class="error-message"></div>
+                            <div class="chart-legend-info" id="harianSummaryInfo" style="display:none; flex-wrap:wrap; gap:20px; margin-bottom:15px; padding:10px; background:white; border-radius:8px; border:1px solid #e0e0e0;">
+                                <span>📅 Rentang: <strong id="harianRangeInfo"></strong></span>
+                                <span>💰 Total Akumulasi: <strong id="harianTotalInfo" style="color:#6366f1;"></strong></span>
+                                <span>📈 Rata-rata Harian: <strong id="harianAverageInfo" style="color:#10b981;"></strong></span>
+                                <span>🔝 Hari Tertinggi: <strong id="harianPeakInfo" style="color:#f59e0b;"></strong></span>
+                            </div>
+                            <div style="position:relative; height:400px;"><canvas id="harianChart"></canvas></div>
                         </div>
                     </div>
-                    
-                    <div style="position: relative; height: 400px; margin-top: 20px;">
-                        <canvas id="harianChart"></canvas>
+                </div>
+            </div>
+
+            <!-- ===================== PROFILE SECTION ===================== -->
+            <div id="profile" class="app-section">
+                <div class="card">
+                    <h2>👤 Profile & BioData</h2>
+                    <form id="profileForm">
+                        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="profileNama" placeholder="Nama lengkap"></div>
+                        <div class="form-group"><label>Bio / Tentang</label><textarea id="profileBio" rows="4" style="width:100%; padding:11px 14px; border:1px solid var(--border-color); border-radius:8px;"></textarea></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="profileEmail" placeholder="Email aktif"></div>
+                        <div class="form-group"><label>Nomor WhatsApp</label><input type="text" id="profileWa" placeholder="+62..."></div>
+                        <div class="form-group"><label>Instagram</label><input type="url" id="profileIg" placeholder="https://instagram.com/username"></div>
+                        <div class="form-group"><label>Twitter/X</label><input type="url" id="profileTwitter" placeholder="https://twitter.com/username"></div>
+                        <div class="form-group"><label>LinkedIn</label><input type="url" id="profileLinkedin" placeholder="https://linkedin.com/in/username"></div>
+                        <button type="submit" class="btn-primary">Simpan Profile</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ===================== BERITA SECTION ===================== -->
+            <div id="berita" class="app-section">
+                <div class="card">
+                    <h2>📰 Berita Terkini</h2>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;" id="beritaContainer">
+                        <div><h3>CNN Indonesia</h3><div id="beritaCNN" class="berita-list">Memuat...</div></div>
+                        <div><h3>Detik.com</h3><div id="beritaDetik" class="berita-list">Memuat...</div></div>
                     </div>
+                    <button class="btn-secondary" onclick="loadBerita()" style="margin-top:15px;">🔄 Muat Ulang Berita</button>
+                </div>
+            </div>
+
+            <!-- ===================== TOOLS EXCEL COMPILER ===================== -->
+            <div id="toolsExcel" class="app-section">
+                <div class="card">
+                    <h2>📑 Excel Compiler</h2>
+                    <p>Gabungkan beberapa file Excel menjadi satu sheet tanpa mengurangi atau menambahkan format (nilai data).</p>
+                    <input type="file" id="excelFiles" multiple accept=".xlsx,.xls,.csv" style="margin-bottom:15px;">
+                    <button class="btn-primary" onclick="compileExcel()">Gabungkan File</button>
+                    <div id="excelResult" style="margin-top:15px;"></div>
+                </div>
+            </div>
+
+            <!-- ===================== TOOLS CURRENCY ===================== -->
+            <div id="toolsCurrency" class="app-section">
+                <div class="card">
+                    <h2>💱 Currency (Kurs Mata Uang)</h2>
+                    <p>Referensi kurs dari Bank Indonesia & Google (data API publik).</p>
+                    <button class="btn-primary" onclick="loadCurrency()">🔄 Muat Kurs</button>
+                    <div id="currencyResult" style="margin-top:15px; overflow-x:auto;"></div>
+                </div>
+            </div>
+
+            <!-- ===================== TOOLS JELAJAH WISATA ===================== -->
+            <div id="toolsJelajah" class="app-section">
+                <div class="card">
+                    <h2>🗺️ Jelajah Tempat Wisata</h2>
+                    <p>Rekomendasi tempat wisata terbaik berdasarkan Google Maps.</p>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                        <input type="text" id="jelajahQuery" placeholder="Cari tempat wisata, misal: Bali" style="flex:1;">
+                        <button class="btn-primary" onclick="loadJelajah()" style="width:auto;">🔍 Cari</button>
+                    </div>
+                    <div id="jelajahResult" style="position:relative; height:450px; border-radius:12px; overflow:hidden;"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ============ AUTHENTICATION SYSTEM ============
+        // ============ AUTH ============
         let currentUser = null;
-        
-        // Admin credentials
         const ADMIN_USERNAME = 'Theo';
         const ADMIN_PASSWORD = 'Jakarta@2026';
-        
-        // Google Client ID (Ganti dengan Client ID Anda sendiri dari Google Cloud Console)
         const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
-        
-        // Initialize Google Identity Services
-        window.google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleCallback
-        });
-        
+        window.google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCallback });
+
         function switchLoginTab(tab) {
             document.querySelectorAll('.login-tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.login-tab-btn').forEach(b => b.classList.remove('active'));
-            
-            if (tab === 'user') {
-                document.getElementById('userLoginTab').classList.add('active');
-                document.querySelector('.login-tab-btn:first-child').classList.add('active');
-            } else {
-                document.getElementById('adminLoginTab').classList.add('active');
-                document.querySelector('.login-tab-btn:last-child').classList.add('active');
-            }
-            
-            // Clear error message
+            if (tab === 'user') { document.getElementById('userLoginTab').classList.add('active'); document.querySelector('.login-tab-btn:first-child').classList.add('active'); }
+            else { document.getElementById('adminLoginTab').classList.add('active'); document.querySelector('.login-tab-btn:last-child').classList.add('active'); }
             hideLoginError();
         }
-        
-        function showLoginError(message) {
-            const errorDiv = document.getElementById('loginError');
-            errorDiv.textContent = message;
-            errorDiv.classList.add('show');
-        }
-        
-        function hideLoginError() {
-            const errorDiv = document.getElementById('loginError');
-            errorDiv.classList.remove('show');
-        }
-        
+        function showLoginError(msg) { const e = document.getElementById('loginError'); e.textContent = msg; e.classList.add('show'); }
+        function hideLoginError() { document.getElementById('loginError').classList.remove('show'); }
         function handleGoogleCallback(response) {
             const payload = JSON.parse(atob(response.credential.split('.')[1]));
-            
-            currentUser = {
-                name: payload.name,
-                email: payload.email,
-                avatar: payload.picture,
-                provider: 'google',
-                isAdmin: false
-            };
-            
+            currentUser = { name: payload.name, email: payload.email, avatar: payload.picture, provider: 'google', isAdmin: false };
             localStorage.setItem('yadoru_user', JSON.stringify(currentUser));
-            
             showMainApp();
         }
-        
-        function handleGoogleLogin() {
-            hideLoginError();
-            window.google.accounts.id.prompt();
-        }
-        
+        function handleGoogleLogin() { hideLoginError(); window.google.accounts.id.prompt(); }
         function handleEmailLogin() {
-            hideLoginError();
-            
-            const email = document.getElementById('emailInput').value.trim();
-            
-            if (!email || !isValidEmail(email)) {
-                showLoginError('⚠️ Masukkan alamat email yang valid!');
-                return;
-            }
-            
-            currentUser = {
-                name: email.split('@')[0],
-                email: email,
-                avatar: '',
-                provider: 'email',
-                isAdmin: false
-            };
-            
+            hideLoginError(); const email = document.getElementById('emailInput').value.trim();
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showLoginError('⚠️ Masukkan email valid!'); return; }
+            currentUser = { name: email.split('@')[0], email: email, avatar: '', provider: 'email', isAdmin: false };
             localStorage.setItem('yadoru_user', JSON.stringify(currentUser));
-            
             showMainApp();
         }
-        
         function handleAdminLogin() {
-            hideLoginError();
-            
-            const username = document.getElementById('adminUsername').value.trim();
-            const password = document.getElementById('adminPassword').value;
-            
-            if (!username || !password) {
-                showLoginError('⚠️ Masukkan username dan password admin!');
-                return;
-            }
-            
+            hideLoginError(); const username = document.getElementById('adminUsername').value.trim(); const password = document.getElementById('adminPassword').value;
+            if (!username || !password) { showLoginError('⚠️ Masukkan username dan password!'); return; }
             if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                currentUser = {
-                    name: 'Theo',
-                    email: 'admin@yadoru.app',
-                    avatar: '',
-                    provider: 'admin',
-                    isAdmin: true
-                };
-                
+                currentUser = { name: 'Theo', email: 'admin@yadoru.app', avatar: '', provider: 'admin', isAdmin: true };
                 localStorage.setItem('yadoru_user', JSON.stringify(currentUser));
-                
-                // Clear input fields
-                document.getElementById('adminUsername').value = '';
-                document.getElementById('adminPassword').value = '';
-                
                 showMainApp();
-            } else {
-                showLoginError('❌ Username atau password admin salah!');
-            }
+            } else { showLoginError('❌ Username atau password admin salah!'); }
         }
-        
-        function isValidEmail(email) {
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return regex.test(email);
-        }
-        
-        function handleLogout() {
-            if (confirm('Apakah Anda yakin ingin keluar?')) {
-                currentUser = null;
-                localStorage.removeItem('yadoru_user');
-                showLoginOverlay();
-            }
-        }
-        
+        function handleLogout() { if (confirm('Keluar?')) { currentUser = null; localStorage.removeItem('yadoru_user'); showLoginOverlay(); } }
+        function showLoginOverlay() { document.getElementById('loginOverlay').classList.remove('hidden'); document.getElementById('mainApp').style.display = 'none'; }
         function showMainApp() {
             document.getElementById('loginOverlay').classList.add('hidden');
             document.getElementById('mainApp').style.display = 'block';
-            
-            // Update user info
             document.getElementById('userName').textContent = currentUser.name;
             document.getElementById('userEmail').textContent = currentUser.email;
-            
-            // Show/hide admin badge
-            if (currentUser.isAdmin) {
-                document.getElementById('adminBadge').style.display = 'inline-block';
-                document.getElementById('userAvatar').classList.add('admin-avatar');
-                document.getElementById('adminPanel').style.display = 'block';
-            } else {
-                document.getElementById('adminBadge').style.display = 'none';
-                document.getElementById('userAvatar').classList.remove('admin-avatar');
-                document.getElementById('adminPanel').style.display = 'none';
-            }
-            
-            // Generate avatar
-            if (currentUser.avatar) {
-                document.getElementById('userAvatar').src = currentUser.avatar;
-                document.getElementById('userAvatar').style.display = 'block';
-            } else {
-                const initial = currentUser.name.charAt(0).toUpperCase();
-                const canvas = document.createElement('canvas');
-                canvas.width = 45;
-                canvas.height = 45;
-                const ctx = canvas.getContext('2d');
-                
-                // Different color for admin
-                ctx.fillStyle = currentUser.isAdmin ? '#8b5cf6' : '#6366f1';
-                ctx.fillRect(0, 0, 45, 45);
-                ctx.fillStyle = 'white';
-                ctx.font = '22px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(initial, 22.5, 22.5);
-                
-                document.getElementById('userAvatar').src = canvas.toDataURL();
-                document.getElementById('userAvatar').style.display = 'block';
-            }
-            
-            // Initialize the app
+            if (currentUser.isAdmin) { document.getElementById('adminBadge').style.display = 'inline-block'; document.getElementById('adminPanel').style.display = 'block'; }
+            else { document.getElementById('adminBadge').style.display = 'none'; document.getElementById('adminPanel').style.display = 'none'; }
+            generateAvatar();
             initializeApp();
-            
-            // Update admin stats if admin
-            if (currentUser.isAdmin) {
-                updateAdminStats();
-            }
+            loadProfile();
+            loadBerita();
+            if (currentUser.isAdmin) updateAdminStats();
         }
-        
-        function showLoginOverlay() {
-            document.getElementById('loginOverlay').classList.remove('hidden');
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('emailInput').value = '';
-            document.getElementById('adminUsername').value = '';
-            document.getElementById('adminPassword').value = '';
-            hideLoginError();
+        function generateAvatar() {
+            const img = document.getElementById('userAvatar');
+            if (currentUser.avatar) { img.src = currentUser.avatar; img.style.display = 'block'; return; }
+            const canvas = document.createElement('canvas'); canvas.width = 45; canvas.height = 45; const ctx = canvas.getContext('2d');
+            ctx.fillStyle = currentUser.isAdmin ? '#8b5cf6' : '#6366f1'; ctx.fillRect(0,0,45,45);
+            ctx.fillStyle = 'white'; ctx.font = '22px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(currentUser.name.charAt(0).toUpperCase(), 22.5, 22.5);
+            img.src = canvas.toDataURL(); img.style.display = 'block';
         }
-        
-        function checkExistingSession() {
-            const savedUser = localStorage.getItem('yadoru_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showMainApp();
-            } else {
-                showLoginOverlay();
-            }
+        function checkExistingSession() { const saved = localStorage.getItem('yadoru_user'); if (saved) { currentUser = JSON.parse(saved); showMainApp(); } else showLoginOverlay(); }
+
+        // ============ NAVIGATION ============
+        function showSection(sectionId) {
+            document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            if (sectionId === 'dashboard') { /* nothing */ }
+            if (sectionId === 'profile') { loadProfile(); }
+            if (sectionId === 'berita') { loadBerita(); }
         }
-        
-        function updateAdminStats() {
-            // Get all users data from localStorage
-            const allKeys = Object.keys(localStorage);
-            const userDataKeys = allKeys.filter(key => key.startsWith('giftDataPro_'));
-            
-            let totalUsers = userDataKeys.length;
-            let totalGift = 0;
-            let totalDates = new Set();
-            
-            userDataKeys.forEach(key => {
-                const userData = JSON.parse(localStorage.getItem(key));
-                Object.keys(userData).forEach(date => {
-                    totalDates.add(date);
-                    Object.values(userData[date]).forEach(userGift => {
-                        totalGift += userGift.total;
-                    });
-                });
-            });
-            
-            document.getElementById('adminTotalUsers').textContent = totalUsers;
-            document.getElementById('adminTotalGift').textContent = totalGift.toLocaleString();
-            document.getElementById('adminTotalDates').textContent = totalDates.size;
-        }
-        
-        // ============ ORIGINAL APP LOGIC ============
+
+        // ============ DATA & DASHBOARD ============
         let giftData = {};
-        let myChart = null;
-        let harianChart = null;
-        
+        let myChart = null, harianChart = null;
         function initializeApp() {
-            const userDataKey = `giftDataPro_${currentUser.email}`;
-            giftData = JSON.parse(localStorage.getItem(userDataKey)) || {};
-            
-            const todayStr = new Date().toISOString().split('T')[0];
-            document.getElementById('inputDate').value = todayStr;
-            
+            const key = `giftDataPro_${currentUser.email}`;
+            giftData = JSON.parse(localStorage.getItem(key)) || {};
+            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
             initHarianDateFilter();
             renderTable();
         }
-        
         function saveData() {
-            const userDataKey = `giftDataPro_${currentUser.email}`;
-            localStorage.setItem(userDataKey, JSON.stringify(giftData));
-            
-            // Update admin stats if current user is admin
-            if (currentUser.isAdmin) {
-                updateAdminStats();
-            }
+            localStorage.setItem(`giftDataPro_${currentUser.email}`, JSON.stringify(giftData));
+            if (currentUser.isAdmin) updateAdminStats();
         }
-        
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(tab + 'Tab').classList.add('active');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
-            const tabIndex = {
-                'input': 0,
-                'report': 1,
-                'grafik': 2,
-                'grafikHarian': 3
-            };
-            
-            document.querySelectorAll('.tab-btn')[tabIndex[tab]].classList.add('active');
-            
-            if(tab === 'report') {
-                renderTable();
-            }
-            if(tab === 'grafik') {
-                initDateFilter();
-                validateAndUpdateCharts();
-            }
-            if(tab === 'grafikHarian') {
-                initHarianDateFilter();
-                validateAndUpdateHarianChart();
-            }
+            const idx = { input:0, report:1, grafik:2, grafikHarian:3 }[tab];
+            document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+            if (tab === 'report') renderTable();
+            if (tab === 'grafik') { initDateFilter(); validateAndUpdateCharts(); }
+            if (tab === 'grafikHarian') { initHarianDateFilter(); validateAndUpdateHarianChart(); }
         }
-        
-        // OCR Screenshot Reader
-        const screenshotInput = document.getElementById('screenshotInput');
-        const loadingText = document.getElementById('loadingText');
-        
-        screenshotInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            loadingText.style.display = 'block';
-            
+        // OCR
+        document.getElementById('screenshotInput').addEventListener('change', function(e) {
+            const file = e.target.files[0]; if (!file) return;
+            document.getElementById('loadingText').style.display = 'block';
             Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
-                loadingText.style.display = 'none';
-                parseReceiptText(text);
-                screenshotInput.value = '';
-            }).catch(err => {
-                loadingText.style.display = 'none';
-                alert('Gagal membaca gambar.');
-                console.error(err);
-            });
+                document.getElementById('loadingText').style.display = 'none';
+                parseReceiptText(text); this.value = '';
+            }).catch(err => { document.getElementById('loadingText').style.display = 'none'; alert('Gagal membaca gambar.'); });
         });
-        
         function parseReceiptText(text) {
-            const lines = text.split('\n');
-            let detectedName = "";
-            let detectedAmount = 0;
-            
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
+            const lines = text.split('\n'); let detectedName = '', detectedAmount = 0;
+            for (let i=0; i<lines.length; i++) {
+                const line = lines[i].trim();
                 if (line.includes('+')) {
-                    let cleanNum = line.replace(/[^0-9]/g, '');
-                    if (cleanNum.length > 0) {
-                        detectedAmount = parseInt(cleanNum);
-                        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
-                            let nextLine = lines[j].trim();
-                            if (nextLine.length > 1 && !nextLine.includes('2026') && !nextLine.includes('+')) {
-                                detectedName = nextLine.split(' ')[0];
-                                break;
-                            }
+                    const clean = line.replace(/[^0-9]/g, '');
+                    if (clean.length) {
+                        detectedAmount = parseInt(clean);
+                        for (let j=i+1; j<Math.min(i+3, lines.length); j++) {
+                            const nl = lines[j].trim();
+                            if (nl.length > 1 && !nl.includes('2026') && !nl.includes('+')) { detectedName = nl.split(' ')[0]; break; }
                         }
                         break;
                     }
                 }
             }
-            
-            if (detectedName && detectedAmount > 0) {
-                document.getElementById('nama').value = detectedName;
-                document.getElementById('jumlah').value = detectedAmount;
-                alert(`Berhasil mendeteksi!\nNama: ${detectedName}\nJumlah: ${detectedAmount}`);
-            } else {
-                alert("Pola otomatis tidak sepenuhnya dikenali. Silakan masukkan data secara manual.");
-            }
+            if (detectedName && detectedAmount > 0) { document.getElementById('nama').value = detectedName; document.getElementById('jumlah').value = detectedAmount; alert(`Terdeteksi: ${detectedName} - ${detectedAmount}`); }
+            else alert('Pola tidak dikenali, masukkan manual.');
         }
-        
         document.getElementById('giftForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const selectedDate = document.getElementById('inputDate').value;
+            const date = document.getElementById('inputDate').value;
             const nama = document.getElementById('nama').value.trim();
             const jumlah = parseInt(document.getElementById('jumlah').value);
-            
-            const now = new Date();
-            const timeString = now.toTimeString().split(' ')[0];
-            const fullDateTime = `${selectedDate} ${timeString}`;
-            
-            if(!giftData[selectedDate]) giftData[selectedDate] = {};
-            if(!giftData[selectedDate][nama]) {
-                giftData[selectedDate][nama] = { total: 0, lastTime: fullDateTime };
-            }
-            
-            giftData[selectedDate][nama].total += jumlah;
-            giftData[selectedDate][nama].lastTime = fullDateTime;
-            
+            const time = new Date().toTimeString().split(' ')[0];
+            const full = `${date} ${time}`;
+            if (!giftData[date]) giftData[date] = {};
+            if (!giftData[date][nama]) giftData[date][nama] = { total: 0, lastTime: full };
+            giftData[date][nama].total += jumlah;
+            giftData[date][nama].lastTime = full;
             saveData();
-            
-            document.getElementById('nama').value = '';
-            document.getElementById('jumlah').value = '';
-            document.getElementById('nama').focus();
-            
-            alert(`Data Berhasil Disimpan untuk tanggal ${selectedDate}!`);
-            
-            if (document.getElementById('grafikHarianTab').classList.contains('active')) {
-                validateAndUpdateHarianChart();
-            }
+            document.getElementById('nama').value = ''; document.getElementById('jumlah').value = '';
+            alert(`Data tersimpan untuk ${date}!`);
+            if (document.getElementById('grafikHarianTab').classList.contains('active')) validateAndUpdateHarianChart();
         });
-        
-        function toggleSortColumn(columnType) {
-            const sortSelect = document.getElementById('sortSelect');
-            if (columnType === 'name') {
-                sortSelect.value = (sortSelect.value === 'name_asc') ? 'name_desc' : 'name_asc';
-            } else if (columnType === 'total') {
-                sortSelect.value = (sortSelect.value === 'total_desc') ? 'total_asc' : 'total_desc';
-            } else if (columnType === 'time') {
-                sortSelect.value = (sortSelect.value === 'time_desc') ? 'time_asc' : 'time_desc';
-            }
-            renderTable();
-        }
-        
-        function resetDateFilter() {
-            document.getElementById('filterDate').value = '';
-            renderTable();
-        }
-        
+        function toggleSortColumn(col) { const sel = document.getElementById('sortSelect'); if (col==='name') sel.value = sel.value==='name_asc'?'name_desc':'name_asc'; if (col==='total') sel.value = sel.value==='total_desc'?'total_asc':'total_desc'; if (col==='time') sel.value = sel.value==='time_desc'?'time_asc':'time_desc'; renderTable(); }
+        function resetDateFilter() { document.getElementById('filterDate').value=''; renderTable(); }
         function renderTable() {
-            const tableBody = document.getElementById('giftTableBody');
-            tableBody.innerHTML = '';
+            const tbody = document.getElementById('giftTableBody'); tbody.innerHTML = '';
             const keyword = document.getElementById('searchNama').value.toLowerCase();
             const filterDate = document.getElementById('filterDate').value;
             const sortBy = document.getElementById('sortSelect').value;
-            
-            document.getElementById('sort-icon-name').innerText = sortBy === 'name_asc' ? '▲' : (sortBy === 'name_desc' ? '▼' : '↕');
-            document.getElementById('sort-icon-total').innerText = sortBy === 'total_desc' ? '▼' : (sortBy === 'total_asc' ? '▲' : '↕');
-            document.getElementById('sort-icon-time').innerText = sortBy === 'time_desc' ? '▼' : (sortBy === 'time_asc' ? '▲' : '↕');
-            
+            document.getElementById('sort-icon-name').innerText = sortBy.includes('name_asc')?'▲':sortBy.includes('name_desc')?'▼':'↕';
+            document.getElementById('sort-icon-total').innerText = sortBy.includes('total_desc')?'▼':sortBy.includes('total_asc')?'▲':'↕';
+            document.getElementById('sort-icon-time').innerText = sortBy.includes('time_desc')?'▼':sortBy.includes('time_asc')?'▲':'↕';
             const allDates = Object.keys(giftData).sort();
-            
-            let targetDate = filterDate;
-            if (!targetDate && allDates.length > 0) {
-                targetDate = allDates[allDates.length - 1];
-            }
-            
-            const aggregated = {};
-            let grandTotal = 0;
-            
+            let targetDate = filterDate || (allDates.length ? allDates[allDates.length-1] : null);
+            const aggregated = {}; let grandTotal = 0;
             const targetDates = filterDate ? [filterDate] : Object.keys(giftData);
-            
-            targetDates.forEach(date => {
-                if(giftData[date]) {
-                    const users = giftData[date];
-                    for(let name in users) {
-                        if(!aggregated[name]) {
-                            aggregated[name] = { total: 0, lastTime: users[name].lastTime };
-                        }
-                        aggregated[name].total += users[name].total;
-                        if(users[name].lastTime > aggregated[name].lastTime) {
-                            aggregated[name].lastTime = users[name].lastTime;
-                        }
-                    }
-                }
-            });
-            
+            targetDates.forEach(date => { if (giftData[date]) { for (let name in giftData[date]) { if (!aggregated[name]) aggregated[name] = {total:0,lastTime:giftData[date][name].lastTime}; aggregated[name].total += giftData[date][name].total; if (giftData[date][name].lastTime > aggregated[name].lastTime) aggregated[name].lastTime = giftData[date][name].lastTime; } } });
             const allNames = Object.keys(aggregated);
-            
-            if (targetDate && giftData[targetDate]) {
-                Object.values(giftData[targetDate]).forEach(item => {
-                    grandTotal += item.total;
-                });
-                if (filterDate) {
-                    document.getElementById('labelStatGift').innerText = `Total Gift (Tanggal: ${targetDate})`;
-                } else {
-                    document.getElementById('labelStatGift').innerText = `Total Gift (Terkini: ${targetDate})`;
-                }
-            } else {
-                document.getElementById('labelStatGift').innerText = "Total Keseluruhan Gift";
-            }
-            
+            if (targetDate && giftData[targetDate]) { Object.values(giftData[targetDate]).forEach(item => grandTotal += item.total); document.getElementById('labelStatGift').innerText = filterDate ? `Total Gift (${targetDate})` : `Total Gift (Terkini: ${targetDate})`; }
+            else document.getElementById('labelStatGift').innerText = "Total Keseluruhan Gift";
             document.getElementById('statTotalGift').innerText = grandTotal.toLocaleString();
             document.getElementById('statTotalSubject').innerText = allNames.length;
-            
-            let filteredNames = allNames.filter(name => name.toLowerCase().includes(keyword));
-            
-            filteredNames.sort((a, b) => {
-                if (sortBy === 'name_asc') return a.localeCompare(b);
-                if (sortBy === 'name_desc') return b.localeCompare(a);
-                if (sortBy === 'total_desc') return aggregated[b].total - aggregated[a].total;
-                if (sortBy === 'total_asc') return aggregated[a].total - aggregated[b].total;
-                if (sortBy === 'time_desc') return aggregated[b].lastTime.localeCompare(aggregated[a].lastTime);
-                if (sortBy === 'time_asc') return aggregated[a].lastTime.localeCompare(aggregated[b].lastTime);
-                return 0;
-            });
-            
-            if (Object.keys(giftData).length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="empty-row">Belum ada data gift yang dimasukkan.</td></tr>`;
-                return;
-            }
-            
-            if (filteredNames.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="empty-row">Tidak ada data subject yang ditemukan untuk filter tersebut.</td></tr>`;
-                return;
-            }
-            
+            let filtered = allNames.filter(n => n.toLowerCase().includes(keyword));
+            filtered.sort((a,b) => { if (sortBy==='name_asc') return a.localeCompare(b); if (sortBy==='name_desc') return b.localeCompare(a); if (sortBy==='total_desc') return aggregated[b].total-aggregated[a].total; if (sortBy==='total_asc') return aggregated[a].total-aggregated[b].total; if (sortBy==='time_desc') return aggregated[b].lastTime.localeCompare(aggregated[a].lastTime); if (sortBy==='time_asc') return aggregated[a].lastTime.localeCompare(aggregated[b].lastTime); return 0; });
+            if (!Object.keys(giftData).length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Belum ada data gift.</td></tr>'; return; }
+            if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Tidak ada data subject ditemukan.</td></tr>'; return; }
             let no = 1;
-            filteredNames.forEach(name => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${no++}</td>
-                    <td><b>${escapeHtml(name)}</b></td>
-                    <td><small style="color: var(--muted-color);">📅 ${aggregated[name].lastTime}</small></td>
-                    <td><strong style="color:var(--primary-color);">${aggregated[name].total.toLocaleString()}</strong></td>
-                `;
-                tableBody.appendChild(row);
-            });
-            
-            const totalRow = document.createElement('tr');
-            totalRow.className = 'grand-total-row';
-            totalRow.innerHTML = `
-                <td colspan="3" style="text-align: right;">TOTAL KESELURUHAN:</td>
-                <td>${grandTotal.toLocaleString()}</td>
-            `;
-            tableBody.appendChild(totalRow);
+            filtered.forEach(name => { const row = document.createElement('tr'); row.innerHTML = `<td>${no++}</td><td><b>${escapeHtml(name)}</b></td><td><small>📅 ${aggregated[name].lastTime}</small></td><td><strong style="color:var(--primary-color)">${aggregated[name].total.toLocaleString()}</strong></td>`; tbody.appendChild(row); });
+            const totalRow = document.createElement('tr'); totalRow.className = 'grand-total-row'; totalRow.innerHTML = `<td colspan="3" style="text-align:right">TOTAL KESELURUHAN:</td><td>${grandTotal.toLocaleString()}</td>`; tbody.appendChild(totalRow);
         }
-        
         function exportToCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,No,Nama Subject,Waktu Input Terakhir,Total Gift\n";
-            let no = 1;
-            
-            const aggregated = {};
-            Object.keys(giftData).forEach(date => {
-                const users = giftData[date];
-                for(let name in users) {
-                    if(!aggregated[name]) aggregated[name] = { total: 0, lastTime: users[name].lastTime };
-                    aggregated[name].total += users[name].total;
-                }
-            });
-            
-            for(let name in aggregated) {
-                csvContent += `${no++},"${name}","${aggregated[name].lastTime}",${aggregated[name].total}\n`;
-            }
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "yadoru_gift_report.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            let csv = "data:text/csv;charset=utf-8,No,Nama Subject,Waktu Input Terakhir,Total Gift\n"; let no=1; const agg={};
+            Object.keys(giftData).forEach(date => { for (let name in giftData[date]) { if (!agg[name]) agg[name]={total:0,lastTime:giftData[date][name].lastTime}; agg[name].total += giftData[date][name].total; } });
+            for (let name in agg) csv += `${no++},"${name}","${agg[name].lastTime}",${agg[name].total}\n`;
+            const link = document.createElement('a'); link.href = encodeURI(csv); link.download = 'yadoru_gift_report.csv'; link.click();
         }
-        
-        function initDateFilter() {
-            const endDateInput = document.getElementById('endDate');
-            const startDateInput = document.getElementById('startDate');
-            
-            if(!endDateInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                endDateInput.value = today;
-                
-                const pastDate = new Date();
-                pastDate.setDate(pastDate.getDate() - 6);
-                startDateInput.value = pastDate.toISOString().split('T')[0];
-            }
-        }
-        
+        function initDateFilter() { const e=document.getElementById('endDate'), s=document.getElementById('startDate'); if(!e.value){ e.value=new Date().toISOString().split('T')[0]; const p=new Date(); p.setDate(p.getDate()-6); s.value=p.toISOString().split('T')[0]; } }
         function validateAndUpdateCharts() {
-            const startStr = document.getElementById('startDate').value;
-            const endStr = document.getElementById('endDate').value;
-            const errorDiv = document.getElementById('chartError');
-            
-            if (!startStr || !endStr) {
-                errorDiv.textContent = '⚠️ Silakan pilih tanggal mulai dan tanggal selesai.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            const startDate = new Date(startStr);
-            const endDate = new Date(endStr);
-            const diffDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays < 0) {
-                errorDiv.textContent = '⚠️ Tanggal selesai tidak boleh lebih awal dari tanggal mulai.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            errorDiv.classList.remove('show');
-            updateCharts();
+            const s=document.getElementById('startDate').value, e=document.getElementById('endDate').value, err=document.getElementById('chartError');
+            if(!s||!e){err.textContent='⚠️ Pilih tanggal mulai dan selesai.'; err.classList.add('show'); return;}
+            if(new Date(s)>new Date(e)){err.textContent='⚠️ Tanggal selesai tidak boleh lebih awal.'; err.classList.add('show'); return;}
+            err.classList.remove('show'); updateCharts();
         }
-        
         function updateCharts() {
-            const ctx = document.getElementById('giftChart').getContext('2d');
-            const startStr = document.getElementById('startDate').value;
-            const endStr = document.getElementById('endDate').value;
-            
-            if(!startStr || !endStr) return;
-            
-            const labels = [];
-            let curr = new Date(startStr);
-            const end = new Date(endStr);
-            
-            while(curr <= end) {
-                labels.push(curr.toISOString().split('T')[0]);
-                curr.setDate(curr.getDate() + 1);
-            }
-            
-            const uniqueUsers = new Set();
-            labels.forEach(date => {
-                if(giftData[date]) {
-                    Object.keys(giftData[date]).forEach(user => uniqueUsers.add(user));
-                }
-            });
-            
-            const colorPalette = ['#6366f1', '#ef4444', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4'];
-            let colorIdx = 0;
-            
-            const datasets = [];
-            uniqueUsers.forEach(user => {
-                const userData = labels.map(date => {
-                    if(giftData[date] && giftData[date][user]) {
-                        return giftData[date][user].total;
-                    }
-                    return 0;
-                });
-                
-                const color = colorPalette[colorIdx % colorPalette.length];
-                colorIdx++;
-                
-                datasets.push({
-                    label: user,
-                    data: userData,
-                    borderColor: color,
-                    backgroundColor: color,
-                    borderWidth: 2,
-                    fill: false,
-                    tension: 0.3
-                });
-            });
-            
-            if(myChart) myChart.destroy();
-            myChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: labels, datasets: datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { 
-                        y: { 
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Total Gift'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Tanggal'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        title: {
-                            display: true,
-                            text: 'Grafik Gift Per User'
-                        }
-                    }
-                }
-            });
+            const ctx=document.getElementById('giftChart').getContext('2d'); const s=document.getElementById('startDate').value, e=document.getElementById('endDate').value;
+            const labels=[]; let curr=new Date(s), end=new Date(e); while(curr<=end){ labels.push(curr.toISOString().split('T')[0]); curr.setDate(curr.getDate()+1); }
+            const users=new Set(); labels.forEach(d=>{ if(giftData[d]) Object.keys(giftData[d]).forEach(u=>users.add(u)); });
+            const palette=['#6366f1','#ef4444','#10b981','#f59e0b','#3b82f6','#8b5cf6','#ec4899']; let ci=0;
+            const datasets=[]; users.forEach(user=>{ const data=labels.map(d=>giftData[d]&&giftData[d][user]?giftData[d][user].total:0); const c=palette[ci%palette.length]; ci++; datasets.push({label:user,data,borderColor:c,backgroundColor:c,borderWidth:2,fill:false,tension:0.3}); });
+            if(myChart) myChart.destroy(); myChart=new Chart(ctx,{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
         }
-        
-        // Akumulasi Gift Harian Functions
-        function initHarianDateFilter() {
-            const endDateInput = document.getElementById('harianEndDate');
-            const startDateInput = document.getElementById('harianStartDate');
-            
-            if(!endDateInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                endDateInput.value = today;
-                
-                const pastDate = new Date();
-                pastDate.setDate(pastDate.getDate() - 6);
-                startDateInput.value = pastDate.toISOString().split('T')[0];
-            }
+        function initHarianDateFilter(){ const e=document.getElementById('harianEndDate'), s=document.getElementById('harianStartDate'); if(!e.value){ e.value=new Date().toISOString().split('T')[0]; const p=new Date(); p.setDate(p.getDate()-6); s.value=p.toISOString().split('T')[0]; } }
+        function setQuickDateRange(days, event){ const end=new Date(), start=new Date(); start.setDate(start.getDate()-(days-1)); document.getElementById('harianStartDate').value=start.toISOString().split('T')[0]; document.getElementById('harianEndDate').value=end.toISOString().split('T')[0]; document.querySelectorAll('.quick-date-btn').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); validateAndUpdateHarianChart(); }
+        function validateAndUpdateHarianChart(){ const s=document.getElementById('harianStartDate').value, e=document.getElementById('harianEndDate').value, err=document.getElementById('harianChartError'); if(!s||!e){err.textContent='⚠️ Pilih tanggal mulai dan selesai.'; err.classList.add('show'); return;} const diff=Math.floor((new Date(e)-new Date(s))/(86400000)); if(diff<0){err.textContent='⚠️ Tanggal selesai tidak boleh lebih awal.'; err.classList.add('show'); return;} if(diff<2){err.textContent='⚠️ Rentang minimal 3 hari.'; err.classList.add('show'); return;} if(diff>30){err.textContent='⚠️ Rentang maksimal 1 bulan (31 hari).'; err.classList.add('show'); return;} err.classList.remove('show'); updateHarianChart(s,e); }
+        function updateHarianChart(s,e){
+            const ctx=document.getElementById('harianChart').getContext('2d'); const labels=[], daily=[]; let curr=new Date(s), end=new Date(e), total=0, peak=0, peakDate='', daysWith=0;
+            while(curr<=end){ const d=curr.toISOString().split('T')[0]; labels.push(d); let dt=0; if(giftData[d]) Object.values(giftData[d]).forEach(u=>dt+=u.total); daily.push(dt); total+=dt; if(dt>0)daysWith++; if(dt>peak){peak=dt; peakDate=d;} curr.setDate(curr.getDate()+1); }
+            const avg=daysWith?Math.round(total/daysWith):0;
+            document.getElementById('harianSummaryInfo').style.display='flex';
+            document.getElementById('harianRangeInfo').textContent=`${formatDate(s)} - ${formatDate(e)}`; document.getElementById('harianTotalInfo').textContent=total.toLocaleString(); document.getElementById('harianAverageInfo').textContent=avg.toLocaleString(); document.getElementById('harianPeakInfo').textContent=`${peak.toLocaleString()} (${formatDate(peakDate)})`;
+            if(harianChart) harianChart.destroy(); harianChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Total Gift Harian',data:daily,backgroundColor:daily.map(v=>v===peak&&v>0?'rgba(245,158,11,0.8)':'rgba(99,102,241,0.7)'),borderColor:daily.map(v=>v===peak&&v>0?'#f59e0b':'#6366f1'),borderWidth:2,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false},tooltip:{callbacks:{title:(ctx)=>formatDate(ctx[0].label),label:(ctx)=>`Total Gift: ${ctx.parsed.y.toLocaleString()}`}}}}});
         }
-        
-        function setQuickDateRange(days, event) {
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() - (days - 1));
-            
-            document.getElementById('harianStartDate').value = startDate.toISOString().split('T')[0];
-            document.getElementById('harianEndDate').value = endDate.toISOString().split('T')[0];
-            
-            document.querySelectorAll('.quick-date-btn').forEach(btn => btn.classList.remove('active'));
-            if (event && event.target) {
-                event.target.classList.add('active');
-            }
-            
-            validateAndUpdateHarianChart();
-        }
-        
-        function validateAndUpdateHarianChart() {
-            const startStr = document.getElementById('harianStartDate').value;
-            const endStr = document.getElementById('harianEndDate').value;
-            const errorDiv = document.getElementById('harianChartError');
-            
-            if (!startStr || !endStr) {
-                errorDiv.textContent = '⚠️ Silakan pilih tanggal mulai dan tanggal selesai.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            const startDate = new Date(startStr);
-            const endDate = new Date(endStr);
-            const diffDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays < 0) {
-                errorDiv.textContent = '⚠️ Tanggal selesai tidak boleh lebih awal dari tanggal mulai.';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            if (diffDays < 2) {
-                errorDiv.textContent = '⚠️ Rentang tanggal minimal 3 hari (selisih minimal 2 hari).';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            if (diffDays > 30) {
-                errorDiv.textContent = '⚠️ Rentang tanggal maksimal 1 bulan (31 hari).';
-                errorDiv.classList.add('show');
-                return;
-            }
-            
-            errorDiv.classList.remove('show');
-            updateHarianChart(startStr, endStr);
-        }
-        
-        function updateHarianChart(startStr, endStr) {
-            const ctx = document.getElementById('harianChart').getContext('2d');
-            
-            const labels = [];
-            const dailyTotals = [];
-            let curr = new Date(startStr);
-            const end = new Date(endStr);
-            
-            let totalAccumulation = 0;
-            let peakDay = 0;
-            let peakDate = '';
-            let daysWithData = 0;
-            
-            while(curr <= end) {
-                const dateStr = curr.toISOString().split('T')[0];
-                labels.push(dateStr);
-                
-                let dailyTotal = 0;
-                if(giftData[dateStr]) {
-                    Object.values(giftData[dateStr]).forEach(userData => {
-                        dailyTotal += userData.total;
-                    });
-                }
-                
-                dailyTotals.push(dailyTotal);
-                totalAccumulation += dailyTotal;
-                
-                if(dailyTotal > 0) daysWithData++;
-                
-                if(dailyTotal > peakDay) {
-                    peakDay = dailyTotal;
-                    peakDate = dateStr;
-                }
-                
-                curr.setDate(curr.getDate() + 1);
-            }
-            
-            const averageDaily = daysWithData > 0 ? Math.round(totalAccumulation / daysWithData) : 0;
-            
-            document.getElementById('harianSummaryInfo').style.display = 'flex';
-            document.getElementById('harianRangeInfo').textContent = `${formatDate(startStr)} - ${formatDate(endStr)}`;
-            document.getElementById('harianTotalInfo').textContent = totalAccumulation.toLocaleString();
-            document.getElementById('harianAverageInfo').textContent = averageDaily.toLocaleString();
-            document.getElementById('harianPeakInfo').textContent = `${peakDay.toLocaleString()} (${formatDate(peakDate)})`;
-            
-            if(harianChart) harianChart.destroy();
-            
-            harianChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Total Gift Harian',
-                        data: dailyTotals,
-                        backgroundColor: dailyTotals.map(val => 
-                            val === peakDay && val > 0 ? 'rgba(245, 158, 11, 0.8)' : 'rgba(99, 102, 241, 0.7)'
-                        ),
-                        borderColor: dailyTotals.map(val => 
-                            val === peakDay && val > 0 ? '#f59e0b' : '#6366f1'
-                        ),
-                        borderWidth: 2,
-                        borderRadius: 6,
-                        hoverBackgroundColor: 'rgba(99, 102, 241, 0.9)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Total Gift'
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Tanggal'
-                            },
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: function(context) {
-                                    return formatDate(context[0].label);
-                                },
-                                label: function(context) {
-                                    return `Total Gift: ${context.parsed.y.toLocaleString()}`;
-                                }
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Grafik Akumulasi Gift Per Hari',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            const options = { day: 'numeric', month: 'short', year: 'numeric' };
-            return date.toLocaleDateString('id-ID', options);
-        }
-        
-        function resetData() {
-            if (confirm("Apakah Anda yakin ingin mereset seluruh data?")) {
-                const userDataKey = `giftDataPro_${currentUser.email}`;
-                localStorage.removeItem(userDataKey);
-                giftData = {};
-                renderTable();
-                
-                if (document.getElementById('grafikHarianTab').classList.contains('active')) {
-                    validateAndUpdateHarianChart();
-                }
-                
-                if (currentUser.isAdmin) {
-                    updateAdminStats();
-                }
-                
-                alert("Data berhasil direset.");
-            }
-        }
-        
-        function escapeHtml(text) {
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
-        
-        // Initialize the app
+        function formatDate(dateStr){ return new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}); }
+        function resetData(){ if(confirm('Reset semua data?')){ localStorage.removeItem(`giftDataPro_${currentUser.email}`); giftData={}; renderTable(); if(currentUser.isAdmin) updateAdminStats(); alert('Data direset.'); } }
+        function escapeHtml(text){ const map={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}; return text.replace(/[&<>"']/g,m=>map[m]); }
+
+        // ============ ADMIN STATS ============
+        function updateAdminStats(){ const keys=Object.keys(localStorage).filter(k=>k.startsWith('giftDataPro_')); let users=keys.length, gift=0; const dates=new Set(); keys.forEach(k=>{ const d=JSON.parse(localStorage.getItem(k)); Object.keys(d).forEach(date=>{dates.add(date); Object.values(d[date]).forEach(u=>gift+=u.total);}); }); document.getElementById('adminTotalUsers').textContent=users; document.getElementById('adminTotalGift').textContent=gift.toLocaleString(); document.getElementById('adminTotalDates').textContent=dates.size; }
+
+        // ============ PROFILE ============
+        function loadProfile(){ const key=`profile_${currentUser.email}`; const p=JSON.parse(localStorage.getItem(key))||{}; document.getElementById('profileNama').value=p.nama||currentUser.name||''; document.getElementById('profileBio').value=p.bio||''; document.getElementById('profileEmail').value=p.email||currentUser.email||''; document.getElementById('profileWa').value=p.wa||''; document.getElementById('profileIg').value=p.ig||''; document.getElementById('profileTwitter').value=p.twitter||''; document.getElementById('profileLinkedin').value=p.linkedin||''; }
+        document.getElementById('profileForm').addEventListener('submit', function(e){ e.preventDefault(); const p={ nama:document.getElementById('profileNama').value, bio:document.getElementById('profileBio').value, email:document.getElementById('profileEmail').value, wa:document.getElementById('profileWa').value, ig:document.getElementById('profileIg').value, twitter:document.getElementById('profileTwitter').value, linkedin:document.getElementById('profileLinkedin').value }; localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(p)); alert('Profile tersimpan!'); });
+
+        // ============ BERITA ============
+        async function loadBerita(){ const cnn=document.getElementById('beritaCNN'), detik=document.getElementById('beritaDetik'); cnn.innerHTML='Memuat...'; detik.innerHTML='Memuat...'; const rss2json='https://api.rss2json.com/v1/api.json?rss_url='; const feeds=[{url:'https://www.cnnindonesia.com/rss',el:cnn},{url:'https://rss.detik.com/index.php/detikcom',el:detik}]; for(const f of feeds){ try{ const res=await fetch(rss2json+encodeURIComponent(f.url)); const data=await res.json(); if(data.status==='ok'){ f.el.innerHTML=data.items.slice(0,10).map(item=>`<div style="margin-bottom:8px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;"><a href="${item.link}" target="_blank" style="text-decoration:none;color:#1e293b;font-weight:500;">${item.title}</a></div>`).join(''); } else f.el.innerHTML='Gagal memuat.'; } catch(err){ f.el.innerHTML='Gagal memuat berita.'; } } }
+
+        // ============ TOOLS: EXCEL COMPILER ============
+        async function compileExcel(){ const files=document.getElementById('excelFiles').files; const result=document.getElementById('excelResult'); if(!files.length){ result.innerHTML='<p style="color:red;">Pilih file Excel terlebih dahulu.</p>'; return; } const wb=XLSX.utils.book_new(); const allData=[]; for(const file of files){ const data=await file.arrayBuffer(); const wbIn=XLSX.read(data); wbIn.SheetNames.forEach(sheet=>{ const ws=wbIn.Sheets[sheet]; const rows=XLSX.utils.sheet_to_json(ws,{header:1}); allData.push({sheet, rows}); }); } const wsOut=XLSX.utils.aoa_to_sheet(allData.flatMap(d=>d.rows)); XLSX.utils.book_append_sheet(wb, wsOut, 'Gabungan'); XLSX.writeFile(wb, 'gabungan_excel.xlsx'); result.innerHTML='<p style="color:green;">File berhasil digabungkan! Unduhan dimulai.</p>'; }
+
+        // ============ TOOLS: CURRENCY ============
+        async function loadCurrency(){ const div=document.getElementById('currencyResult'); div.innerHTML='Memuat...'; try{ const res=await fetch('https://open.er-api.com/v6/latest/USD'); const data=await res.json(); if(data.result==='success'){ const rates=data.rates; const currencies=['USD','IDR','EUR','GBP','JPY','SGD','MYR','CNY','AUD','INR']; let html='<table><tr><th>Mata Uang</th><th>Nilai (terhadap USD)</th></tr>'; currencies.forEach(c=>{ if(rates[c]) html+=`<tr><td>${c}</td><td>${rates[c].toLocaleString()}</td></tr>`; }); html+='</table>'; html+='<p style="margin-top:10px;font-size:12px;color:#666;">Sumber: open.er-api.com (kurs tengah Google/Bank Indonesia dapat berbeda)</p>'; div.innerHTML=html; } else div.innerHTML='Gagal memuat data kurs.'; } catch(err){ div.innerHTML='Gagal memuat data kurs. Periksa koneksi.'; } }
+
+        // ============ TOOLS: JELAJAH WISATA ============
+        function loadJelajah(){ const q=document.getElementById('jelajahQuery').value.trim()||'tempat wisata terbaik Indonesia'; const div=document.getElementById('jelajahResult'); div.innerHTML=`<iframe src="https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed" style="width:100%;height:100%;border:0;" loading="lazy"></iframe>`; }
+
+        // ============ INIT ============
         checkExistingSession();
     </script>
 </body>
